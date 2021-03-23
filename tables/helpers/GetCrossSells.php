@@ -15,14 +15,16 @@ class GetCrossSells {
 
         if ($this->check_category_id($category_id)) {
 
-            if ($this->check_attributes_product_comparison($category_id, $categories)) {
+            if ($this->check_enable_comparison($category_id, $categories)) {
+
+                if ($this->check_attributes_product_comparison($category_id, $categories)) {
 
                     if ($this->check_product_attributes($postmeta)) {
 
                         $attributes_product_comparison = $categories[$category_id]['attributes_product_comparison'];
 //                        var_dump('-----------------', $attributes_product_comparison);
 //                        var_dump('----------', $category_id);
-                        $product_attributes = isset($postmeta['_product_attributes']) ? $postmeta['_product_attributes'] : '';
+//                    $product_attributes = isset($postmeta['_product_attributes']) ? $postmeta['_product_attributes'] : '';
                         $crosssell_ids = $this->get_crosssell_ids($postmeta, $id);
 
                         if (empty($crosssell_ids)) {
@@ -30,9 +32,12 @@ class GetCrossSells {
                         }
 
                         foreach ($crosssell_ids as $id) {
+//                        $id = 161153;
                             $products_array = $this->set_products_array_by_id($id, $all_products);
+
                             if ($products_array) {
                                 $postmeta_array = $this->set_postmeta_array_by_id($id, $all_postmeta);
+                                $product_attributes = isset($postmeta_array['_product_attributes']) ? $postmeta_array['_product_attributes'] : '';
 
                                 $this->set_cross_sells_id($id);
                                 $this->set_cross_sells_name($id, $products_array);
@@ -44,11 +49,11 @@ class GetCrossSells {
                             }
                         }
                     }
-
+                }
             }
         }
 
-//        var_dump('-----', $this->cross_sells);
+//        var_dump('-------------------------------------', $this->cross_sells);
 
         return serialize($this->cross_sells);
     }
@@ -60,6 +65,21 @@ class GetCrossSells {
      */
     private function check_category_id($category_id) {
         return is_array($category_id) ? false : true;
+    }
+
+    private function check_enable_comparison($category_id, $categories) {
+//        if (isset($categories[$category_id])) {
+//            if (isset($categories[$category_id]['enable_comparison'])) {
+//                if ($categories[$category_id]['enable_comparison'] == 1) {
+//                    return true;
+//                } else {
+//                    $parent_id = $categories[$category_id]['parent_id'];
+//                }
+//
+//            }
+//        }
+
+        return true;
     }
 
     /**
@@ -177,6 +197,7 @@ class GetCrossSells {
 
     private function get_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations) {
         $data = [];
+        $attributes_is_variation_1 = [];
 
         if (empty($product_attributes)) {
             return $data;
@@ -186,39 +207,120 @@ class GetCrossSells {
 
         $terms_ids = isset($relaishionships[$id]) ? $relaishionships[$id] : [];
         $array_attributes = $this->create_array_attributes($attributes_product_comparison);
+
+
         foreach ($attributes as $key_attribute => $attribute) {
             $name_attribute = $this->check_name_attributes($attribute['name']);
+
             if ($this->select_attribute($name_attribute, $array_attributes)) {
+//                var_dump('+++++++++++++++++++++', $attribute['is_variation']);
                 if ($attribute['is_variation'] == 0) {
-                    $data[$attribute['name']] = !empty($this->get_static_attributes($terms_ids, $attribute, $taxonomies, $terms, $woocommerce_attribute_taxonomies)) ? $this->get_static_attributes($terms_ids, $attribute, $taxonomies, $terms, $woocommerce_attribute_taxonomies) : 0;
 
-                    break;
+                    $attributes_is_variation_0[] = $attribute;
+
                 } else {
-                    var_dump('88888', $postmeta_array);
-                    if (isset($postmeta_array['_default_variation_id']) && $postmeta_array['_default_variation_id'] !== 0) {
-                        var_dump('++++++++++++++');
-                        if (isset($variations[$postmeta_array['_default_variation_id']])) {
-                            foreach (unserialize($variations[$postmeta_array['_default_variation_id']]['attributes']) as $v_attribute) {
-                                if (str_replace('attribute_', '', $v_attribute['taxonomy_slug']) == $attribute['name']) {
-                                    $data[$attribute['name']] = [
-                                        'taxonomy_name' => isset($v_attribute['taxonomy_name']) ? $v_attribute['taxonomy_name'] : 0,
-                                        'term_name' => isset($v_attribute['term_name']) ? $v_attribute['term_name'] : 0,
-                                    ];
 
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    $attributes_is_variation_1[] = $attribute;
+
                 }
             }
         }
 
+        if (!empty($attributes_is_variation_0)) {
+            $data[] = $this->get_static_attributes($terms_ids, $attributes_is_variation_0, $taxonomies, $terms, $woocommerce_attribute_taxonomies);
+        }
+
+
+
+        $data[] = $this->get_variation_attributes($postmeta_array, $variations, $attributes_is_variation_1);
+
         $data = $this->check_array($data);
+
+
+//        var_dump($data);
 
         return $data;
     }
 
+    private function get_variation_attributes($postmeta_array, $variations, $attributes) {
+        $data = [];
+
+        if (!empty($attributes)) {
+            if (isset($postmeta_array['_default_variation_id']) && $postmeta_array['_default_variation_id'] !== 0) {
+                if (isset($variations[$postmeta_array['_default_variation_id']])) {
+                    foreach (unserialize($variations[$postmeta_array['_default_variation_id']]['attributes']) as $v_attribute) {
+                        foreach ($attributes as $attribute) {
+                            if (str_replace('attribute_', '', $v_attribute['taxonomy_slug']) == $attribute['name']) {
+                                $data[$attribute['name']] = [
+                                    'taxonomy_name' => isset($v_attribute['taxonomy_name']) ? $v_attribute['taxonomy_name'] : 0,
+                                    'term_name' => isset($v_attribute['term_name']) ? $v_attribute['term_name'] : 0,
+                                ];
+                            }
+                        }
+                    }
+                    $data['c_pa_dimensions'] = $this->get_c_pa_dimensions($postmeta_array, $variations);
+                }
+            } else {
+                return [];
+            }
+        } else {
+            $data['c_pa_dimensions'] = $this->get_c_pa_dimensions($postmeta_array, $variations);
+        }
+
+
+        return $data;
+    }
+
+    private function get_c_pa_dimensions($postmeta_array, $variations) {
+        $data = [];
+
+        if (isset($postmeta_array['_default_variation_id']) && $postmeta_array['_default_variation_id'] !== 0) {
+            if (isset($variations[$postmeta_array['_default_variation_id']])) {
+                $length = $this->variation_length($variations[$postmeta_array['_default_variation_id']]);
+                $width = $this->variation_width($variations[$postmeta_array['_default_variation_id']]);
+                $height = $this->variation_height($variations[$postmeta_array['_default_variation_id']]);
+            }
+        }
+
+        if (!empty($length) && !empty($width) && !empty($height)) {
+            $data = [
+                'taxonomy_name' => 'Габариты',
+                'term_name' => $width . '×' . $height . '×' . $length
+            ];
+        } elseif (empty($length) && !empty($width) && !empty($height)) {
+            $data = [
+                'taxonomy_name' => 'Габариты',
+                'term_name' => $width . '×' . $height
+            ];
+        } elseif (!empty($length) && !empty($width) && empty($height)) {
+            $data = [
+                'taxonomy_name' => 'Габариты',
+                'term_name' => $width . '×' . $length
+            ];
+        }
+
+
+
+        return $data;
+    }
+
+    private function variation_length($variation) {
+        return $variation['length'] ?? "";
+    }
+
+    private function variation_width($variation) {
+        return $variation['width'] ?? "";
+    }
+
+    private function variation_height($variation) {
+        return $variation['height'] ?? "";
+    }
+
+    /**
+     * @param $attributes_product_comparison
+     * @return array|false|string[]
+     * Создается массив аттрибутов для сравнения (все имена без префикса pa_)
+     */
     private function create_array_attributes($attributes_product_comparison) {
         $data = [];
 
@@ -230,6 +332,12 @@ class GetCrossSells {
         return $data;
     }
 
+    /**
+     * @param $attribute
+     * @return false|string
+     * Имя аттрибута прилетает с префиксом pa_, на выходе префикс отрезается.
+     * Если префикса нет, то имя не меняется.
+     */
     private function check_name_attributes($attribute) {
 
         if (strpos($attribute, 'pa_') === 0) {
@@ -251,13 +359,25 @@ class GetCrossSells {
      * Удалить пустые из результирующего массива
      */
     public function check_array($array) {
+
         foreach ($array as $key => $value) {
             if ($value === 0) {
                 unset($array[$key]);
             }
         }
 
-        return $array;
+        if (empty($array)) {
+            return "";
+        }
+
+        $data = [];
+        foreach ($array as $k => $v) {
+            foreach ($v as $e => $item) {
+                $data[$e] = $item;
+            }
+        }
+
+        return $data;
     }
 
     private function get_static_attributes($terms_ids, $attributes, $taxonomies, $terms, $woocommerce_attribute_taxonomies) {
@@ -265,12 +385,17 @@ class GetCrossSells {
 
         foreach ($terms_ids as $term_id) {
             $taxonomy = $taxonomies[$term_id['term_taxonomy_id']]['taxonomy'];
-            if ($attributes['name'] == $taxonomy) {
-                $term = $terms[$taxonomies[$term_id['term_taxonomy_id']]['term_id']];
+            foreach ($attributes as $attribute) {
 
-                $data['taxonomy_name'] = $woocommerce_attribute_taxonomies[str_replace('pa_', '', $taxonomy)];
-                $data['term_name'] = $term['name'];
+                if ($attribute['name'] == $taxonomy) {
+                    $term = $terms[$taxonomies[$term_id['term_taxonomy_id']]['term_id']];
 
+                    $data[$attribute['name']] = [
+                        'taxonomy_name' => $woocommerce_attribute_taxonomies[str_replace('pa_', '', $taxonomy)],
+                        'term_name' => $term['name']
+                    ];
+
+                }
             }
         }
 

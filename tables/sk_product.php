@@ -73,17 +73,16 @@ class sk_product extends bootstrap {
                     if ($this->filterHelper->filter_expo_product($id)) {
                         //                    $id = 164029;
 //                    $id = 155095;
-//                    $id = 163547;
+//                    $id = 187703;
 //                    $id = 164811;
-                        $id = 161153;
-//                        $id = 161161;
+//                        $id = 161153;
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
                         $postmeta_array = $this->set_postmeta_array_by_id($id, $this->postmeta);
                         $category_id = $this->get_category_id($id, $relashionships_array, $this->taxonomy);
 //                        var_dump('============', $category_id);
                         $caterory_item = $this->get_category($category_id, $categories);
-//                        var_dump('============', $caterory_item);
+//                        var_dump('++++++++++++', $caterory_item);
 
                         $this->set_id('id', $id);
                         $this->set_modified_unix('modified_unix', $id, $products_array);
@@ -239,6 +238,7 @@ class sk_product extends bootstrap {
         $data = [];
 
         foreach ($product_attributes as $attribute) {
+
             if ($attribute['is_variation'] == 0) {
                 $data['static'][$attribute['name']] = $attribute['name'];
             } else {

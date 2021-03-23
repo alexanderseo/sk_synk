@@ -103,7 +103,7 @@ class CreateBodyOptions {
                                 'type' => 'catcol',
                                 'type_details_category' => self::get_data_for_category(isset($option['group_by_catcol'][0]['ids_categories']) ? $option['group_by_catcol'][0]['ids_categories'] : "", $categories),
                                 'catcol_products' => $products_intersect,
-                                'type_details_collection' => [
+                                'type_details' => [
                                     'term_id' => $data_collection['term_id'],
                                     'name' => $data_collection['name'],
                                     'slug' => $data_collection['slug'],
@@ -118,7 +118,7 @@ class CreateBodyOptions {
                                 'cat' => $option['group_by_catcol'][0]['ids_categories'],
                                 'parent_collection' => $id_collection,
                                 'type' => 'catcol',
-                                'type_details_category' => self::get_data_for_category(isset($option['group_by_catcol'][0]['ids_categories']) ? $option['group_by_catcol'][0]['ids_categories'] : "", $categories),
+                                'type_details' => self::get_data_for_category(isset($option['group_by_catcol'][0]['ids_categories']) ? $option['group_by_catcol'][0]['ids_categories'] : "", $categories),
                                 'cat_products' => $ids_str_categories_catcol,
                                 'unique_id' => crc32($ids_str_categories_catcol),
                             ];

@@ -46,6 +46,7 @@ class sk_categories extends bootstrap {
             $this->categories[$value]['dative_title'] = (isset($term_meta['dative-title']) && !empty($term_meta['dative-title'])) ? $term_meta['dative-title'] : 0;
             $this->categories[$value]['nominative_title'] = (isset($term_meta['nominative-title']) && !empty($term_meta['nominative-title'])) ? $term_meta['nominative-title'] : 0;
             $this->categories[$value]['has_fabric'] = (isset($term_meta['has-fabric']) && !empty($term_meta['has-fabric'])) ? $term_meta['has-fabric'] : 0;
+            $this->categories[$value]['enable_comparison'] = (isset($term_meta['enable-product-comparison']) && !empty($term_meta['enable-product-comparison'])) ? $term_meta['enable-product-comparison'] : 0;
 
             if (isset($term_meta['enable-product-comparison']) && isset($term_meta['attributes-product-comparison']) && $term_meta['enable-product-comparison'] != 0 && !empty($term_meta['attributes-product-comparison'])) {
                 $this->categories[$value]['attributes_product_comparison'] = $term_meta['attributes-product-comparison'];
