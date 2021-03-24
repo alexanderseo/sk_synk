@@ -15,38 +15,33 @@ class GetCrossSells {
 
         if ($this->check_category_id($category_id)) {
 
-            if ($this->check_enable_comparison($category_id, $categories)) {
+            $category_id = $this->check_enable_comparison($category_id, $categories);
 
-                if ($this->check_attributes_product_comparison($category_id, $categories)) {
+            if ($this->check_attributes_product_comparison($category_id, $categories)) {
 
-                    if ($this->check_product_attributes($postmeta)) {
+                if ($this->check_product_attributes($postmeta)) {
 
-                        $attributes_product_comparison = $categories[$category_id]['attributes_product_comparison'];
-//                        var_dump('-----------------', $attributes_product_comparison);
-//                        var_dump('----------', $category_id);
-//                    $product_attributes = isset($postmeta['_product_attributes']) ? $postmeta['_product_attributes'] : '';
-                        $crosssell_ids = $this->get_crosssell_ids($postmeta, $id);
+                    $attributes_product_comparison = $categories[$category_id]['attributes_product_comparison'];
+                    $crosssell_ids = $this->get_crosssell_ids($postmeta, $id);
 
-                        if (empty($crosssell_ids)) {
-                            return serialize($this->cross_sells);
-                        }
+                    if (empty($crosssell_ids)) {
+                        return serialize($this->cross_sells);
+                    }
 
-                        foreach ($crosssell_ids as $id) {
-//                        $id = 161153;
-                            $products_array = $this->set_products_array_by_id($id, $all_products);
+                    foreach ($crosssell_ids as $id) {
+                        $products_array = $this->set_products_array_by_id($id, $all_products);
 
-                            if ($products_array) {
-                                $postmeta_array = $this->set_postmeta_array_by_id($id, $all_postmeta);
-                                $product_attributes = isset($postmeta_array['_product_attributes']) ? $postmeta_array['_product_attributes'] : '';
+                        if ($products_array) {
+                            $postmeta_array = $this->set_postmeta_array_by_id($id, $all_postmeta);
+                            $product_attributes = isset($postmeta_array['_product_attributes']) ? $postmeta_array['_product_attributes'] : '';
 
-                                $this->set_cross_sells_id($id);
-                                $this->set_cross_sells_name($id, $products_array);
-                                $this->set_cross_sells_slug($id, $products_array);
-                                $this->set_cross_sells_subtitle($id, $postmeta_array);
-                                $this->set_cross_sells_price($id, $postmeta_array, $variations);
-                                $this->set_cross_sells_image($id, $postmeta_array, $variations);
-                                $this->set_cross_sells_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations);
-                            }
+                            $this->set_cross_sells_id($id);
+                            $this->set_cross_sells_name($id, $products_array);
+                            $this->set_cross_sells_slug($id, $products_array);
+                            $this->set_cross_sells_subtitle($id, $postmeta_array);
+                            $this->set_cross_sells_price($id, $postmeta_array, $variations);
+                            $this->set_cross_sells_image($id, $postmeta_array, $variations);
+                            $this->set_cross_sells_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations);
                         }
                     }
                 }
@@ -67,17 +62,23 @@ class GetCrossSells {
         return is_array($category_id) ? false : true;
     }
 
+    /**
+     * @param $category_id
+     * @param $categories
+     * @return bool|mixed
+     * Определяем, у какой категории необходимо использовать атрибуты сравнения (у дочерней или родительской).
+     */
     private function check_enable_comparison($category_id, $categories) {
-//        if (isset($categories[$category_id])) {
-//            if (isset($categories[$category_id]['enable_comparison'])) {
-//                if ($categories[$category_id]['enable_comparison'] == 1) {
-//                    return true;
-//                } else {
-//                    $parent_id = $categories[$category_id]['parent_id'];
-//                }
-//
-//            }
-//        }
+        if (isset($categories[$category_id])) {
+            if (isset($categories[$category_id]['enable_comparison'])) {
+                if ($categories[$category_id]['enable_comparison'] == 1) {
+                    return $category_id;
+                } else {
+                    return $categories[$category_id]['parent_id'];
+                }
+
+            }
+        }
 
         return true;
     }
