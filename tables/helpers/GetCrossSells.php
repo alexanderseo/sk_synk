@@ -1,5 +1,6 @@
 <?php
 
+require_once 'GetUpsell.php';
 
 class GetCrossSells {
 
@@ -11,11 +12,22 @@ class GetCrossSells {
 
     }
 
-    public function get_crosssells($id, $postmeta, $category_id, $categories, $variations, $all_products, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies) {
+    public function get_crosssells($id, $postmeta, $category_id, $categories, $variations, $all_products, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $materials, $all_ids_products, $fabrics, $termmeta, $terms_by_slug) {
 
         if ($this->check_category_id($category_id)) {
 
+
             $category_id = $this->check_enable_comparison($category_id, $categories);
+
+            if ($this->second_check_enable_comparison($category_id, $categories)) {
+                $crosssell_ids = $this->get_crosssell_ids($postmeta, $id);
+
+                $cross_like_upsell = new GetUpsell($postmeta, $variations, $all_products, $all_postmeta, $all_ids_products, $fabrics, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials);
+
+                $this->cross_sells = $cross_like_upsell->get_upsells($crosssell_ids);
+
+                return $this->cross_sells;
+            }
 
             if ($this->check_attributes_product_comparison($category_id, $categories)) {
 
@@ -34,6 +46,8 @@ class GetCrossSells {
                         if ($products_array) {
                             $postmeta_array = $this->set_postmeta_array_by_id($id, $all_postmeta);
                             $product_attributes = isset($postmeta_array['_product_attributes']) ? $postmeta_array['_product_attributes'] : '';
+
+                            $this->cross_sells['enable_comparison'] = true;
 
                             $this->set_cross_sells_id($id);
                             $this->set_cross_sells_name($id, $products_array);
@@ -81,6 +95,25 @@ class GetCrossSells {
         }
 
         return true;
+    }
+
+    /**
+     * @param $category_id
+     * @param $categories
+     * @return bool
+     * Костыльная проверка, если и у родительской категори нет необходимости сравнивать атрибуты, то собираем товары, как аксессуары.
+     */
+    private function second_check_enable_comparison($category_id, $categories) {
+        if (isset($categories[$category_id])) {
+            if (isset($categories[$category_id]['enable_comparison'])) {
+                if ($categories[$category_id]['enable_comparison'] == 1) {
+                    return false;
+                } else {
+                    return true;
+                }
+
+            }
+        }
     }
 
     /**
@@ -404,31 +437,31 @@ class GetCrossSells {
     }
 
     private function set_cross_sells_id($id) {
-        $this->cross_sells[$id]['id'] = $this->get_id($id);
+        $this->cross_sells['items'][$id]['id'] = $this->get_id($id);
     }
 
     private function set_cross_sells_name($id, $this_products) {
-        $this->cross_sells[$id]['name'] = $this->get_name($this_products);
+        $this->cross_sells['items'][$id]['name'] = $this->get_name($this_products);
     }
 
     private function set_cross_sells_slug($id, $this_products) {
-        $this->cross_sells[$id]['slug'] = $this->get_slug($this_products);
+        $this->cross_sells['items'][$id]['slug'] = $this->get_slug($this_products);
     }
 
     private function set_cross_sells_subtitle($id, $postmeta) {
-        $this->cross_sells[$id]['subtitle'] = $this->get_subtitle($postmeta);
+        $this->cross_sells['items'][$id]['subtitle'] = $this->get_subtitle($postmeta);
     }
 
     private function set_cross_sells_price($id, $postmeta_array, $variations) {
-        $this->cross_sells[$id]['price'] = $this->get_price($postmeta_array, $variations);
+        $this->cross_sells['items'][$id]['price'] = $this->get_price($postmeta_array, $variations);
     }
 
     private function set_cross_sells_image($id, $postmeta_array, $variations) {
-        $this->cross_sells[$id]['image'] = $this->get_image($postmeta_array, $variations);
+        $this->cross_sells['items'][$id]['image'] = $this->get_image($postmeta_array, $variations);
     }
 
     private function set_cross_sells_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations) {
-        $this->cross_sells[$id]['attributes'] = $this->get_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations);
+        $this->cross_sells['items'][$id]['attributes'] = $this->get_attributes($id, $product_attributes, $attributes_product_comparison, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_array, $variations);
     }
 
 }

@@ -24,10 +24,11 @@ class GetUpsell {
     private $woocommerce_attribute_taxonomies;
     private $termmeta;
     private $terms_by_slug;
+    private $materials;
 
     private $filterHelper;
 
-    public function __construct($postmeta, $variations, $posts, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug) {
+    public function __construct($postmeta, $variations, $posts, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials) {
         $this->posts = $posts;
         $this->postmeta = $postmeta;
         $this->variations = $variations;
@@ -42,23 +43,31 @@ class GetUpsell {
         $this->woocommerce_attribute_taxonomies = $woocommerce_attribute_taxonomies;
         $this->termmeta = $termmeta;
         $this->terms_by_slug = $terms_by_slug;
+        $this->materials = $materials;
 
         $this->filterHelper = new FilterTypeProduct($this->all_relashionships, $this->taxonomy, $this->terms);
     }
 
-    public function get_upsells() {
+    public function get_upsells($crosssell_ids) {
 //        $upsell_ids = isset($this->postmeta['_upsell_ids']) ? unserialize($this->postmeta['_upsell_ids']) : "";
-        $upsell_ids = isset($this->postmeta['_crosssell_ids']) ? unserialize($this->postmeta['_crosssell_ids']) : "";
+        if (empty($crosssell_ids)) {
+            $upsell_ids = isset($this->postmeta['_crosssell_ids']) ? unserialize($this->postmeta['_crosssell_ids']) : "";
 
-        if (empty($upsell_ids)) {
-            return serialize([]);
+            if (empty($upsell_ids)) {
+                return serialize([]);
+            }
+        } else {
+            $upsell_ids = $crosssell_ids;
         }
+
 
         foreach ($upsell_ids as $id) {
             if ($this->filterHelper->filter_simple_product($id)) {
                 if ($this->check_status_product($id, $this->all_ids_products)) {
                     $postmeta_array = $this->set_postmeta_array_by_id($id, $this->all_postmeta);
                     $relashionships_array = $this->set_relashions_array_by_id($id, $this->all_relashionships);
+
+                    $this->data['enable_comparison'] = false;
 
                     $this->set_id('id', $id);
                     $this->set_slug('slug', $id, $this->posts);
@@ -68,13 +77,15 @@ class GetUpsell {
                     $this->set_image('image', $id, $postmeta_array, $this->variations);
                     $this->set_default_variation_id('default_variation_id', $id, $postmeta_array);
                     $this->set_product_attributes('product_attributes', $id, $postmeta_array);
-                    $this->set_attributes($id, $postmeta_array, $this->fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->all_postmeta, $this->termmeta);
+                    $this->set_attributes($id, $postmeta_array, $this->fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->all_postmeta, $this->termmeta, $this->materials);
                     $this->set_default_attributes('default_attributes', $id, $postmeta_array, $this->woocommerce_attribute_taxonomies, $this->terms_by_slug);
                 }
             }
         }
 
+
         return serialize($this->data);
+//        return $this->data;
     }
 
     /**
@@ -168,7 +179,7 @@ class GetUpsell {
         $array_sizes = ['w300'];
 
         foreach ($array_sizes as $size) {
-            $data[$size] = $images[$size];
+            $data[$size] = $images[$size] ?? "";
         }
 
         return serialize($data);
@@ -183,35 +194,35 @@ class GetUpsell {
     }
 
     private function set_id($key, $id) {
-        $this->data[$id][$key] = $this->get_upsell_id($id);
+        $this->data['items'][$id][$key] = $this->get_upsell_id($id);
     }
 
     private function set_slug($key, $id, $posts) {
-        $this->data[$id][$key] = $this->get_upsell_slug($id, $posts);
+        $this->data['items'][$id][$key] = $this->get_upsell_slug($id, $posts);
     }
 
     private function set_name($key, $id, $posts) {
-        $this->data[$id][$key] = $this->get_upsell_name($id, $posts);
+        $this->data['items'][$id][$key] = $this->get_upsell_name($id, $posts);
     }
 
     private function set_subtitle($key, $id, $postmeta) {
-        $this->data[$id][$key] = $this->get_upsell_subtitle($postmeta);
+        $this->data['items'][$id][$key] = $this->get_upsell_subtitle($postmeta);
     }
 
     private function set_price($key, $id, $postmeta_array, $variations) {
-        $this->data[$id][$key] = $this->get_upsell_price($postmeta_array, $variations);
+        $this->data['items'][$id][$key] = $this->get_upsell_price($postmeta_array, $variations);
     }
 
     private function set_image($key, $id, $postmeta, $variations) {
-        $this->data[$id][$key] = $this->get_upsell_image($postmeta, $variations);
+        $this->data['items'][$id][$key] = $this->get_upsell_image($postmeta, $variations);
     }
 
     private function set_default_variation_id($key, $id, $postmeta): void {
-        $this->data[$id][$key] = $this->get_default_variation_id($postmeta);
+        $this->data['items'][$id][$key] = $this->get_default_variation_id($postmeta);
     }
 
     private function set_product_attributes($key, $id, $postmeta): void {
-        $this->data[$id][$key] = $this->get_product_attributes($postmeta);
+        $this->data['items'][$id][$key] = $this->get_product_attributes($postmeta);
     }
 
     private function get_attributes($product_attributes) {
@@ -230,7 +241,7 @@ class GetUpsell {
         return $data;
     }
 
-    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta): void {
+    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials): void {
 
         if (isset($postmeta['_product_attributes'])) {
             if (!empty(unserialize($postmeta['_product_attributes']))) {
@@ -238,14 +249,14 @@ class GetUpsell {
 
                 $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-                $this->data[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
-                $this->data[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta);
+                $this->data['items'][$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
+                $this->data['items'][$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
             }
         }
     }
 
     private function set_default_attributes($key, $id, $postmeta, $woocommerce_attribute_taxonomies, $terms_by_slug): void {
-        $this->data[$id][$key] = $this->get_default_attributes($postmeta, $woocommerce_attribute_taxonomies, $terms_by_slug);
+        $this->data['items'][$id][$key] = $this->get_default_attributes($postmeta, $woocommerce_attribute_taxonomies, $terms_by_slug);
 
     }
 }

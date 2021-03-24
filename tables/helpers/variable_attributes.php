@@ -3,15 +3,17 @@
 
 trait variable_attributes {
 
-    private function get_variable_attributes($terms_ids, $attributes, $fabrics, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta) {
+    private function get_variable_attributes($terms_ids, $attributes, $fabrics, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials) {
         $data = [];
         $taxonomy_options = [];
 
         foreach ($terms_ids as $term_id) {
-            $taxonomy = $taxonomies[$term_id['term_taxonomy_id']]['taxonomy'];
+//            $taxonomy = $taxonomies[$term_id['term_taxonomy_id']]['taxonomy'];
+            $taxonomy = $this->get_taxonomy($term_id, $taxonomies);
 
             if (isset($attributes['variable'][$taxonomy])) {
-                $term = $terms[$taxonomies[$term_id['term_taxonomy_id']]['term_id']];
+//                $term = $terms[$taxonomies[$term_id['term_taxonomy_id']]['term_id']];
+                $term = $this->get_term($term_id, $taxonomies, $terms);
 
 
 //                $taxonomy_options[$taxonomy][$term['slug']]['taxonomy_slug'] = $taxonomy;
@@ -31,6 +33,11 @@ trait variable_attributes {
                     }
                 }
 
+                if ($taxonomy == 'pa_material') {
+
+                    $taxonomy_options[$taxonomy][$term['slug']]['img'] = unserialize($materials[$term['term_id']]['material_image']);
+                }
+
                 $taxonomy_id = $taxonomies[$term_id['term_taxonomy_id']]['term_taxonomy_id'];
 
                 $data[$taxonomy]['taxonomy_id'] = $taxonomy_id;
@@ -41,5 +48,14 @@ trait variable_attributes {
         }
 
         return serialize(array_values($data));
+//        return array_values($data);
+    }
+
+    private function get_taxonomy($term_id, $taxonomies) {
+        return $taxonomies[$term_id['term_taxonomy_id']]['taxonomy'];
+    }
+
+    private function get_term($term_id, $taxonomies, $terms) {
+        return $terms[$taxonomies[$term_id['term_taxonomy_id']]['term_id']];
     }
 }
