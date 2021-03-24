@@ -65,24 +65,20 @@ class sk_product extends bootstrap {
         return self::$instance;
     }
 
-    public function get($variations, $categories, $fabrics) {
+    public function get($variations, $categories, $fabrics, $materials) {
 
         foreach ($this->all_ids_products as $id) {
             if ($this->filterHelper->filter_simple_product($id)) {
                 if ($this->filterHelper->filter_stock_product($id)) {
                     if ($this->filterHelper->filter_expo_product($id)) {
-                        //                    $id = 164029;
-//                    $id = 155095;
-//                    $id = 187703;
-//                    $id = 164811;
-//                        $id = 161153;
+
+//                    $id = 160429;
+
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
                         $postmeta_array = $this->set_postmeta_array_by_id($id, $this->postmeta);
                         $category_id = $this->get_category_id($id, $relashionships_array, $this->taxonomy);
-//                        var_dump('============', $category_id);
                         $caterory_item = $this->get_category($category_id, $categories);
-//                        var_dump('++++++++++++', $caterory_item);
 
                         $this->set_id('id', $id);
                         $this->set_modified_unix('modified_unix', $id, $products_array);
@@ -95,11 +91,11 @@ class sk_product extends bootstrap {
                         $this->set_video('video', $id, $postmeta_array, $this->attachments, $this->attachments_with_parent);
                         $this->set_collection_id('collection_id', $id, $postmeta_array);
                         $this->set_interior_photos('interior_photos', $id, $postmeta_array, $this->attachments);
-                        $this->set_up_sells_ids('up_sells_ids', $id, $postmeta_array, $variations, $this->all_products, $this->postmeta, $this->all_ids_products, $fabrics, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->termmeta, $this->terms_by_slug);
+                        $this->set_up_sells_ids('up_sells_ids', $id, $postmeta_array, $variations, $this->all_products, $this->postmeta, $this->all_ids_products, $fabrics, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->termmeta, $this->terms_by_slug, $materials);
                         $this->set_recommended_categories('recommended_categories', $id, $caterory_item, $categories);
-                        $this->set_attributes($id, $postmeta_array, $fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->postmeta, $this->termmeta);
+                        $this->set_attributes($id, $postmeta_array, $fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->postmeta, $this->termmeta, $materials);
                         $this->set_default_attributes('default_attributes', $id, $postmeta_array, $this->woocommerce_attribute_taxonomies, $this->terms_by_slug);
-                        $this->set_cross_sells('cross_sells', $id, $postmeta_array, $category_id, $categories, $variations, $this->all_products, $this->postmeta, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies);
+                        $this->set_cross_sells('cross_sells', $id, $postmeta_array, $category_id, $categories, $variations, $this->all_products, $this->postmeta, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $materials, $this->all_ids_products, $fabrics, $this->termmeta, $this->terms_by_slug);
                         $this->set_popular_products($id, $postmeta_array);
                         $this->set_new_sets($id, $fabrics, $categories);
                     }
@@ -189,10 +185,10 @@ class sk_product extends bootstrap {
         return serialize($data);
     }
 
-    private function get_up_sells_ids($postmeta, $variations, $posts, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug) {
-        $upsells = new GetUpsell($postmeta, $variations, $posts,$all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug);
-
-        return $upsells->get_upsells();
+    private function get_up_sells_ids($postmeta, $variations, $posts, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials) {
+        $upsells = new GetUpsell($postmeta, $variations, $posts,$all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials);
+        $cross_pass = "";
+        return $upsells->get_upsells($cross_pass);
     }
 
     private function get_recommended_categories($recommended_categories, $categories) {
@@ -339,8 +335,8 @@ class sk_product extends bootstrap {
     /**
      * ЭТО ЛЕТИТ В FIT из админки КРОССЕЛЫ
      */
-    private function set_up_sells_ids($key, $id, $postmeta, $variations, $products, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug): void {
-        $this->products[$id][$key] = $this->get_up_sells_ids($postmeta, $variations, $products, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug);
+    private function set_up_sells_ids($key, $id, $postmeta, $variations, $products, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials): void {
+        $this->products[$id][$key] = $this->get_up_sells_ids($postmeta, $variations, $products, $all_postmeta, $all_ids_products, $fabrics, $all_relashionships, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta, $terms_by_slug, $materials);
     }
 
     private function set_recommended_categories($key, $id, $category, $categories): void {
@@ -353,13 +349,13 @@ class sk_product extends bootstrap {
      * @param $fabrics
      * Устанавливаем static и variable атрибуты товара
      */
-    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta): void {
+    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials): void {
 
         if (isset($postmeta['_product_attributes'])) {
             $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
             $this->products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
-            $this->products[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta);
+            $this->products[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
         }
 
     }
@@ -372,9 +368,9 @@ class sk_product extends bootstrap {
     /**
      * ЭТО ЛЕТИТ В COMPARISON из админки АПСЕЙЛЫ
      */
-    private function set_cross_sells($key, $id, $postmeta, $category_id, $categories, $variations, $all_product, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies): void {
+    private function set_cross_sells($key, $id, $postmeta, $category_id, $categories, $variations, $all_product, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $materials, $all_ids_products, $fabrics, $termmeta, $terms_by_slug): void {
         $cross_sells = new GetCrossSells();
-        $this->products[$id][$key] = $cross_sells->get_crosssells($id, $postmeta, $category_id, $categories, $variations, $all_product, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies);
+        $this->products[$id][$key] = $cross_sells->get_crosssells($id, $postmeta, $category_id, $categories, $variations, $all_product, $all_postmeta, $relaishionships, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $materials, $all_ids_products, $fabrics, $termmeta, $terms_by_slug);
     }
 
     private function set_popular_products($id, $postmeta): void {

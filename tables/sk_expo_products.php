@@ -59,7 +59,7 @@ class sk_expo_products extends bootstrap {
         return self::$instance;
     }
 
-    public function get($fabrics) {
+    public function get($fabrics, $materials) {
 
 
         foreach ($this->ids_products as $id) {
@@ -88,7 +88,7 @@ class sk_expo_products extends bootstrap {
                 $this->set_default_variation_id('default_variation_id', $id, $postmeta);
                 $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
                 $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
-                $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta);
+                $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
                 $this->set_expo_data($id, $postmeta);
                 $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
                 $this->set_prototype($id, $postmeta);
@@ -422,12 +422,12 @@ class sk_expo_products extends bootstrap {
         }
     }
 
-    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta) {
+    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials) {
 
         if ($this->has_meta($id, '_product_attributes', ['static_attributes', 'variable_attributes'], $postmeta)) {
             $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-            $this->expo_products[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta);
+            $this->expo_products[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
         }
     }
 
