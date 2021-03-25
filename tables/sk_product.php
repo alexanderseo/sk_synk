@@ -72,7 +72,7 @@ class sk_product extends bootstrap {
                 if ($this->filterHelper->filter_stock_product($id)) {
                     if ($this->filterHelper->filter_expo_product($id)) {
 
-//                    $id = 160429;
+//                    $id = 187453;
 
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);

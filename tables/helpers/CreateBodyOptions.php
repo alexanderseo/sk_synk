@@ -25,8 +25,8 @@ class CreateBodyOptions {
 
         if (isset($options['groups'])) {
             foreach ($options['groups'] as $key => $item) {
-                foreach ($item as $option) {
 
+                foreach ($item as $option) {
                     if (isset($option['group_by_ids'])) {
                         $data[$key]['discount'] = $option['group_by_ids'][0]['discount'];
                         $data[$key]['base_max'] = $option['group_by_ids'][0]['base_max'];
@@ -72,18 +72,22 @@ class CreateBodyOptions {
                     }
 
                     if (isset($option['group_by_categories'])) {
-                        $data[$key]['discount'] = $option['group_by_categories'][0]['discount'];
-                        $data[$key]['base_max'] = $option['group_by_categories'][0]['base_max'];
-                        $data[$key]['base_min'] = $option['group_by_categories'][0]['base_min'];
-                        $ids_array_categories = $this->get_categories_products(isset($option['group_by_categories'][0]['ids_categories']) ? $option['group_by_categories'][0]['ids_categories'] : "", $products, $relationships);
-                        $data[$key]['details'][] = [
-                            'maximum' => $option['group_by_categories'][0]['maximum'],
-                            'minimum' => $option['group_by_categories'][0]['minimum'],
-                            'type' => 'category',
-                            'type_details' => self::get_data_for_category(isset($option['group_by_categories'][0]['ids_categories']) ? $option['group_by_categories'][0]['ids_categories'] : "", $categories),
-                            'categories_products' => $ids_array_categories,
-                            'unique_id' => crc32($ids_array_categories),
-                        ];
+                        for ($i = 0; $i < 6; $i++) {
+                            if (isset($option['group_by_categories'][$i])) {
+                                $data[$key]['discount'] = $option['group_by_categories'][$i]['discount'];
+                                $data[$key]['base_max'] = $option['group_by_categories'][$i]['base_max'];
+                                $data[$key]['base_min'] = $option['group_by_categories'][$i]['base_min'];
+                                $ids_array_categories = $this->get_categories_products(isset($option['group_by_categories'][$i]['ids_categories']) ? $option['group_by_categories'][$i]['ids_categories'] : "", $products, $relationships);
+                                $data[$key]['details'][] = [
+                                    'maximum' => $option['group_by_categories'][$i]['maximum'],
+                                    'minimum' => $option['group_by_categories'][$i]['minimum'],
+                                    'type' => 'category',
+                                    'type_details' => self::get_data_for_category(isset($option['group_by_categories'][$i]['ids_categories']) ? $option['group_by_categories'][$i]['ids_categories'] : "", $categories),
+                                    'categories_products' => $ids_array_categories,
+                                    'unique_id' => crc32($ids_array_categories),
+                                ];
+                            }
+                        }
                     }
 
                     if (isset($option['group_by_catcol'])) {
@@ -133,17 +137,32 @@ class CreateBodyOptions {
         return $data;
     }
 
-    static function get_data_for_category($category_id, $categories) {
+    static function get_data_for_category($category_ids, $categories) {
         $body = [];
 
-        if (empty($category_id)) {
+        if (empty($category_ids)) {
             return $body;
         }
 
-        if (isset($categories[$category_id])) {
+
+        if (explode(',', $category_ids) == 1) {
+            if (isset($categories[$category_ids])) {
+                $body = [
+                    'nominative_title' => $categories[$category_ids]['nominative_title'],
+                    'img' => !empty($categories[$category_ids]['thumbnail']) ? self::set_image_size($categories[$category_ids]['thumbnail']) : ['original' => self::$empty_img],
+                ];
+            }
+        }
+        if (explode(',', $category_ids) > 1) {
+            $array_ids = explode(',', $category_ids);
+            foreach ($array_ids as $id) {
+                $nominative_titles[] = $categories[$id]['nominative_title'];
+                $images[] = !empty($categories[$id]['thumbnail']) ? self::set_image_size($categories[$id]['thumbnail']) : ['original' => self::$empty_img];
+            }
+
             $body = [
-                'nominative_title' => $categories[$category_id]['nominative_title'],
-                'img' => !empty($categories[$category_id]['thumbnail']) ? self::set_image_size($categories[$category_id]['thumbnail']) : ['original' => self::$empty_img],
+                'nominative_title' => $nominative_titles,
+                'img' => $images,
             ];
         }
 
@@ -245,6 +264,7 @@ class CreateBodyOptions {
      */
     private function get_categories_products($id, $products, $relationships) {
         $data = [];
+
         $ids_products = $this->get_products_from_category($id, $relationships);
 
         foreach ($ids_products as $product_id) {
@@ -266,14 +286,22 @@ class CreateBodyOptions {
     private function get_products_from_category($id, $relationships) {
         $ids_products = [];
 
-        foreach ($relationships as $key => $item) {
-            foreach ($item as $item_id) {
-                if (isset($item_id['term_taxonomy_id'])) {
-                    if ($item_id['term_taxonomy_id'] == $id) {
-                        $ids_products[] = $key;
+        if ($id) {
+
+            $ids = explode(',', $id);
+            foreach ($ids as $id_item) {
+                foreach ($relationships as $key => $item) {
+                    foreach ($item as $item_id) {
+                        if (isset($item_id['term_taxonomy_id'])) {
+                            if ($item_id['term_taxonomy_id'] == $id_item) {
+                                $ids_products[] = $key;
+                            }
+                        }
                     }
                 }
             }
+
+
         }
 
         return $ids_products;

@@ -114,10 +114,14 @@ class sk_sets_table extends bootstrap {
                     }
 
                     if (isset($option['group_by_categories'])) {
-                        $ids = $this->get_categories_products(isset($option['group_by_categories'][0]['ids_categories']) ? $option['group_by_categories'][0]['ids_categories'] : "", $products, $relationships);
-                        $unique_id = crc32($ids);
-                        $data[$unique_id]['id'] = $unique_id;
-                        $data[$unique_id]['ids'] = $this->get_categories_products(isset($option['group_by_categories'][0]['ids_categories']) ? $option['group_by_categories'][0]['ids_categories'] : "", $products, $relationships);
+                        for ($i = 0; $i < 6; $i++) {
+                            if (isset($option['group_by_categories'][$i])) {
+                                $ids = $this->get_categories_products(isset($option['group_by_categories'][$i]['ids_categories']) ? $option['group_by_categories'][$i]['ids_categories'] : "", $products, $relationships);
+                                $unique_id = crc32($ids);
+                                $data[$unique_id]['id'] = $unique_id;
+                                $data[$unique_id]['ids'] = $this->get_categories_products(isset($option['group_by_categories'][$i]['ids_categories']) ? $option['group_by_categories'][$i]['ids_categories'] : "", $products, $relationships);
+                            }
+                        }
                     }
 
                     if (isset($option['group_by_catcol'])) {
@@ -260,14 +264,22 @@ class sk_sets_table extends bootstrap {
     private function get_products_from_category($id, $relationships) {
         $ids_products = [];
 
-        foreach ($relationships as $key => $item) {
-            foreach ($item as $item_id) {
-                if (isset($item_id['term_taxonomy_id'])) {
-                    if ($item_id['term_taxonomy_id'] == $id) {
-                        $ids_products[] = $key;
+        if ($id) {
+
+            $ids = explode(',', $id);
+            foreach ($ids as $id_item) {
+                foreach ($relationships as $key => $item) {
+                    foreach ($item as $item_id) {
+                        if (isset($item_id['term_taxonomy_id'])) {
+                            if ($item_id['term_taxonomy_id'] == $id_item) {
+                                $ids_products[] = $key;
+                            }
+                        }
                     }
                 }
             }
+
+
         }
 
         return $ids_products;
