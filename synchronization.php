@@ -32,7 +32,8 @@ class synchronization {
         $sk_portfolio,
         $sk_expo_products,
         $sk_nav_menu,
-        $sk_interiors
+        $sk_interiors,
+        $sk_product_collections
     ) {
         $tables = array(
             'attachments' => $sk_attachments,
@@ -50,7 +51,8 @@ class synchronization {
             'portfolio' => $sk_portfolio,
             'expo_products' => $sk_expo_products,
             'nav_menu' => $sk_nav_menu,
-            'interiors' => $sk_interiors
+            'interiors' => $sk_interiors,
+            'sk_product_collections' => $sk_product_collections
         );
 
         foreach ($tables as $key => $value) {
@@ -105,7 +107,15 @@ class synchronization {
                     $imploded_columns = implode(', ', $columns);
                     $imploded_values = implode(', ', $values);
 
+
+                    try {
                     $this->database->development->query("INSERT INTO {$key} ($imploded_columns) VALUES ($imploded_values)");
+                    } catch (\PDOException $e) {
+                        var_dump('+++', $values);
+                        var_dump('====', $imploded_columns);
+                        var_dump('////', $imploded_values);
+                        var_dump('---', $e);
+                    }
                 }
             }
 

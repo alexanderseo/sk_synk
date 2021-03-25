@@ -67,7 +67,7 @@ class sk_materials extends bootstrap {
             return serialize($images);
         }
 
-        $images = $wordpress['attachments'][$image_id]['w300'];
+        $images = $wordpress['attachments'][$image_id]['original'];
 
         return serialize($images);
     }

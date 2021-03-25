@@ -35,7 +35,7 @@ trait variable_attributes {
 
                 if ($taxonomy == 'pa_material') {
 
-                    $taxonomy_options[$taxonomy][$term['slug']]['img'] = unserialize($materials[$term['term_id']]['material_image']);
+                    $taxonomy_options[$taxonomy][$term['slug']]['image'] = unserialize($materials[$term['term_id']]['material_image']);
                 }
 
                 $taxonomy_id = $taxonomies[$term_id['term_taxonomy_id']]['term_taxonomy_id'];

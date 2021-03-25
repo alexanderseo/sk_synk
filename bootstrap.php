@@ -18,6 +18,7 @@ require_once 'tables/sk_portfolio.php';
 require_once 'tables/sk_expo_products.php';
 require_once 'tables/sk_nav_menu.php';
 require_once 'tables/sk_interiors.php';
+require_once 'tables/sk_product_collections.php';
 
 
 class bootstrap {
@@ -40,6 +41,7 @@ class bootstrap {
     public $sk_expo_products;
     public $sk_nav_menu;
     public $sk_interiors;
+    public $sk_product_collections;
 
 
 
@@ -72,6 +74,7 @@ class bootstrap {
         $this->sk_expo_products = sk_expo_products::get_instance();
         $this->sk_nav_menu = sk_nav_menu::get_instance();
         $this->sk_interiors = sk_interiors::get_instance();
+        $this->sk_product_collections = sk_product_collections::get_instance();
 
         $this->sk_attachments = $this->sk_attachments->get();
         $this->sk_categories = $this->sk_categories->get();
@@ -89,6 +92,7 @@ class bootstrap {
         $this->sk_expo_products = $this->sk_expo_products->get($this->sk_fabrics, $this->sk_materials);
         $this->sk_nav_menu = $this->sk_nav_menu->get($this->sk_categories);
         $this->sk_interiors = $this->sk_interiors->get();
+        $this->sk_product_collections = $this->sk_product_collections->get();
 
 
 //        $synchronization->start(
@@ -107,7 +111,8 @@ class bootstrap {
 //            $this->sk_portfolio,
 //            $this->sk_expo_products,
 //            $this->sk_nav_menu,
-//            $this->sk_interiors
+//            $this->sk_interiors,
+//            $this->sk_product_collections
 //        );
     }
 
