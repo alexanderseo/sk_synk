@@ -49,8 +49,11 @@ class sk_categories extends bootstrap {
             $this->set_attributes_product_comparison('attributes_product_comparison', (int)$value, $term_meta);
             $this->set_attributes_filter_list('attributes_filter_list', (int)$value, $term_meta);
             $this->set_enable_comparison('enable_comparison', (int)$value, $term_meta);
+            $this->set_icon('icon', (int)$value, $term_meta, $this->attachments);
 
         }
+
+//        var_dump($this->categories);
 
         return $this->categories;
     }
@@ -240,6 +243,18 @@ class sk_categories extends bootstrap {
         }
     }
 
+    private function get_icon(array $term_meta, array $attachments): string {
+        $icon = "0";
+
+        if (isset($term_meta['icon'])) {
+            if (!empty($term_meta['icon'])) {
+                $icon = serialize($attachments[$term_meta['icon']]['original']);
+            }
+        }
+
+        return $icon;
+    }
+
     private function set_id(string $key, int $value): void {
         $this->categories[$value][$key] = $this->get_id($value);
     }
@@ -290,5 +305,9 @@ class sk_categories extends bootstrap {
 
     private function set_attributes_filter_list($key, $value,  $term_meta): void {
         $this->categories[$value][$key] = $this->get_attributes_filter_list($term_meta);
+    }
+
+    private function set_icon($key, $value,  $term_meta, $attachments): void {
+        $this->categories[$value][$key] = $this->get_icon($term_meta, $attachments);
     }
 }

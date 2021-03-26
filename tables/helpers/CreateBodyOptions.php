@@ -74,6 +74,7 @@ class CreateBodyOptions {
                     if (isset($option['group_by_categories'])) {
                         for ($i = 0; $i < 6; $i++) {
                             if (isset($option['group_by_categories'][$i])) {
+
                                 $data[$key]['discount'] = $option['group_by_categories'][$i]['discount'];
                                 $data[$key]['base_max'] = $option['group_by_categories'][$i]['base_max'];
                                 $data[$key]['base_min'] = $option['group_by_categories'][$i]['base_min'];
@@ -97,7 +98,6 @@ class CreateBodyOptions {
                         $ids_str_categories_catcol = $this->get_categories_products(isset($option['group_by_catcol'][0]['ids_categories']) ? $option['group_by_catcol'][0]['ids_categories'] : "", $products, $relationships);
                         $ids_str_collections_catcol = $this->get_collections_products(isset($option['group_by_catcol'][0]['ids_collections']) ? $option['group_by_catcol'][0]['ids_collections'] : "", $products, $postmeta);
                         $use_parent_collection = isset($option['group_by_catcol'][0]['use_parent_collection']) ? $option['group_by_catcol'][0]['use_parent_collection'] : "";
-
                         if (empty($use_parent_collection)) {
                             $data_collection = $this->get_collection_by_id($option['group_by_catcol'][0]['ids_collections'], $terms);
                             $products_intersect = self::intersect_catcol($ids_str_categories_catcol, $ids_str_collections_catcol);
@@ -149,7 +149,8 @@ class CreateBodyOptions {
             if (isset($categories[$category_ids])) {
                 $body = [
                     'nominative_title' => $categories[$category_ids]['nominative_title'],
-                    'img' => !empty($categories[$category_ids]['thumbnail']) ? self::set_image_size($categories[$category_ids]['thumbnail']) : ['original' => self::$empty_img],
+//                    'img' => !empty($categories[$category_ids]['thumbnail']) ? self::set_image_size($categories[$category_ids]['thumbnail']) : ['original' => self::$empty_img],
+                    'img' => !empty($categories[$category_ids]['icon']) ? self::set_image_size($categories[$category_ids]['icon']) : ['original' => self::$empty_img],
                 ];
             }
         }
@@ -157,7 +158,7 @@ class CreateBodyOptions {
             $array_ids = explode(',', $category_ids);
             foreach ($array_ids as $id) {
                 $nominative_titles[] = $categories[$id]['nominative_title'];
-                $images[] = !empty($categories[$id]['thumbnail']) ? self::set_image_size($categories[$id]['thumbnail']) : ['original' => self::$empty_img];
+                $images[] = !empty($categories[$id]['icon']) ? self::set_image_size($categories[$id]['icon']) : ['original' => self::$empty_img];
             }
 
             $body = [
@@ -176,9 +177,9 @@ class CreateBodyOptions {
             return serialize($data);
         }
 
-        $array = unserialize($images);
-        $data['w100'] = isset($array['w100']) ? $array['w100'] : "";
-        $data['original'] = isset($array['original']) ? $array['original'] : "";
+        $data['original'] = unserialize($images);
+//        $data['w100'] = isset($array['w100']) ? $array['w100'] : "";
+//        $data['original'] = isset($array['original']) ? $array['original'] : "";
 
         return serialize($data);
     }
