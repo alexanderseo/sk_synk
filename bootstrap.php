@@ -20,6 +20,7 @@ require_once 'tables/sk_nav_menu.php';
 require_once 'tables/sk_interiors.php';
 require_once 'tables/sk_product_collections.php';
 require_once 'tables/sk_cart_upsell.php';
+require_once 'tables/sk_popular_products.php';
 
 
 class bootstrap {
@@ -44,6 +45,7 @@ class bootstrap {
     public $sk_interiors;
     public $sk_product_collections;
     public $sk_cart_upsell;
+    public $sk_popular_products;
 
 
 
@@ -78,6 +80,7 @@ class bootstrap {
         $this->sk_interiors = sk_interiors::get_instance();
         $this->sk_product_collections = sk_product_collections::get_instance();
         $this->sk_cart_upsell = sk_cart_upsell::get_instance();
+        $this->sk_popular_products = sk_popular_products::get_instance();
 
         $this->sk_attachments = $this->sk_attachments->get();
         $this->sk_categories = $this->sk_categories->get();
@@ -97,28 +100,30 @@ class bootstrap {
         $this->sk_interiors = $this->sk_interiors->get();
         $this->sk_product_collections = $this->sk_product_collections->get();
         $this->sk_cart_upsell = $this->sk_cart_upsell->get();
+        $this->sk_popular_products = $this->sk_popular_products->get();
 
 
-        $synchronization->start(
-            $this->sk_attachments,
-            $this->sk_categories,
-            $this->sk_fabrics,
-            $this->sk_variations,
-            $this->sk_product,
-            $this->sk_options,
-            $this->sk_showrooms,
-            $this->sk_stock_products,
-            $this->sk_materials,
-            $this->sk_type_materials,
-            $this->sk_products_categories_relashionships,
-            $this->sk_sets_table,
-            $this->sk_portfolio,
-            $this->sk_expo_products,
-            $this->sk_nav_menu,
-            $this->sk_interiors,
-            $this->sk_product_collections,
-            $this->sk_cart_upsell
-        );
+//        $synchronization->start(
+//            $this->sk_attachments,
+//            $this->sk_categories,
+//            $this->sk_fabrics,
+//            $this->sk_variations,
+//            $this->sk_product,
+//            $this->sk_options,
+//            $this->sk_showrooms,
+//            $this->sk_stock_products,
+//            $this->sk_materials,
+//            $this->sk_type_materials,
+//            $this->sk_products_categories_relashionships,
+//            $this->sk_sets_table,
+//            $this->sk_portfolio,
+//            $this->sk_expo_products,
+//            $this->sk_nav_menu,
+//            $this->sk_interiors,
+//            $this->sk_product_collections,
+//            $this->sk_cart_upsell,
+//            $this->sk_popular_products
+//        );
     }
 
     private function clear_log() {

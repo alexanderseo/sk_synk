@@ -36,6 +36,7 @@ class wordpress {
         $this->options = $this->db->admin->query("SELECT * FROM wp_options WHERE option_name LIKE 'options%'")->fetchAll(PDO::FETCH_ASSOC);
         $this->options_bases = $this->db->admin->query("SELECT * FROM wp_options WHERE option_name LIKE 'options_bases_%'")->fetchAll(PDO::FETCH_ASSOC);
         $this->options_cart = $this->db->admin->query("SELECT * FROM wp_options WHERE option_name LIKE 'options_cart%'")->fetchAll(PDO::FETCH_ASSOC);
+        $this->options_tabs = $this->db->admin->query("SELECT * FROM wp_options WHERE option_name LIKE 'options_tabs%'")->fetchAll(PDO::FETCH_ASSOC);
 //        $this->post_nav_menu = $this->db->admin->query("SELECT ID, post_title, post_parent, post_name, guid FROM wp_posts WHERE post_type = 'nav_menu_item'")->fetchAll(PDO::FETCH_ASSOC);
     }
 
@@ -402,6 +403,19 @@ class wordpress {
         return $data;
     }
 
+    private function get_options_tabs() {
+        $data = [];
+
+        foreach ($this->options_tabs as $options_tab) {
+            $data[] = [
+                'option_name' => $options_tab['option_name'],
+                'option_value' => $options_tab['option_value']
+            ];
+        }
+
+        return $data;
+    }
+
     private function get_posts_ids() {
         $data = array();
 
@@ -466,5 +480,6 @@ class wordpress {
         $wordpress['posts_nav_menu'] = $this->get_posts_nav_menu();
         $wordpress['posts_interiors'] = $this->get_posts_interiors();
         $wordpress['options_cart'] = $this->get_options_cart();
+        $wordpress['options_tabs'] = $this->get_options_tabs();
     }
 }

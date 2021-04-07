@@ -73,6 +73,7 @@ class sk_product extends bootstrap {
                     if ($this->filterHelper->filter_expo_product($id)) {
 
 //                    $id = 164811;
+//                        $id = 155427;
 
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
@@ -120,8 +121,8 @@ class sk_product extends bootstrap {
         return $array['post_title'];
     }
 
-    private function get_modified_unix($array): string {
-        return strtotime($array['post_modified']);
+    private function get_modified_unix($id, $array): string {
+        return strtotime($array['post_modified']) . $id;
     }
 
     private function get_default_variation_id($postmeta): string {
@@ -248,26 +249,26 @@ class sk_product extends bootstrap {
     private function get_popular_products($id, $postmeta) {
         $data = array();
 
-        if ($this->has_meta_popular_products($id, $postmeta, 'product-popular')) {
-            $data['popular'] = $postmeta[$id]['product-popular'];
+        if ($this->has_meta_popular_products($postmeta, 'product-popular')) {
+            $data['popular'] = $postmeta['product-popular'];
         } else {
             $data['popular'] = 0;
         }
 
-        if ($this->has_meta_popular_products($id, $postmeta, 'product-popular-category')) {
-            $data['popular_order'] = $postmeta[$id]['product-popular-category'];
+        if ($this->has_meta_popular_products($postmeta, 'product-popular-order')) {
+            $data['popular_order'] = $postmeta['product-popular-order'];
         } else {
             $data['popular_order'] = 0;
         }
 
-        if ($this->has_meta_popular_products($id, $postmeta, 'product-popular-category')) {
-            $data['category'] = $postmeta[$id]['product-popular-category'];
+        if ($this->has_meta_popular_products($postmeta, 'product-popular-category')) {
+            $data['category'] = $postmeta['product-popular-category'];
         } else {
             $data['category'] = 0;
         }
 
-        if ($this->has_meta_popular_products($id, $postmeta, 'product-popular-category-order')) {
-            $data['category_order'] = $postmeta[$id]['product-popular-category-order'];
+        if ($this->has_meta_popular_products($postmeta, 'product-popular-category-order')) {
+            $data['category_order'] = $postmeta['product-popular-category-order'];
         } else {
             $data['category_order'] = 0;
         }
@@ -275,9 +276,9 @@ class sk_product extends bootstrap {
         return serialize($data);
     }
 
-    private function has_meta_popular_products($id, $postmeta, $key) {
-        if (isset($postmeta[$id][$key])) {
-            if (!empty($postmeta[$id][$key])) {
+    private function has_meta_popular_products($postmeta, $key) {
+        if (isset($postmeta[$key])) {
+            if (!empty($postmeta[$key])) {
                 return true;
             } else {
                 return false;
@@ -300,7 +301,7 @@ class sk_product extends bootstrap {
     }
 
     private function set_modified_unix($key, $id, $array): void {
-        $this->products[$id][$key] = $this->get_modified_unix($array);
+        $this->products[$id][$key] = $this->get_modified_unix($id, $array);
 
     }
 

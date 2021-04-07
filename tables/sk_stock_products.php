@@ -157,9 +157,9 @@ class sk_stock_products extends bootstrap {
         }
 
         $category = [];
+//        var_dump('----------', $terms);
         $category['name'] = $terms[$category_id]['name'];
         $category['slug'] = $terms[$category_id]['slug'];
-
 
         return serialize($category);
     }
