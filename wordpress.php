@@ -244,7 +244,18 @@ class wordpress {
             if ($value['post_type'] == 'interiors') {
                 $data[$value['ID']] = $value;
             }
+        }
 
+        return $data;
+    }
+
+    private function get_posts_mapplic() {
+        $data = array();
+
+        foreach ($this->posts as $value) {
+            if ($value['post_type'] == 'mapplic_map') {
+                $data[$value['ID']] = $value;
+            }
         }
 
         return $data;
@@ -481,5 +492,6 @@ class wordpress {
         $wordpress['posts_interiors'] = $this->get_posts_interiors();
         $wordpress['options_cart'] = $this->get_options_cart();
         $wordpress['options_tabs'] = $this->get_options_tabs();
+        $wordpress['mapplic'] = $this->get_posts_mapplic();
     }
 }

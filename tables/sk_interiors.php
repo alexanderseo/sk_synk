@@ -10,6 +10,7 @@ class sk_interiors extends bootstrap {
     private $postmeta;
     private $attachments;
     private $terms;
+    private $mapplic;
 
     public function __construct() {
         parent::__construct();
@@ -21,6 +22,7 @@ class sk_interiors extends bootstrap {
         $this->attachments = $wordpress['attachments'];
         $this->ids_interiors = $wordpress['posts_ids']['interiors'];
         $this->terms = $wordpress['terms'];
+        $this->mapplic = $wordpress['mapplic'];
         $this->interiors_data = [];
 
     }
@@ -49,6 +51,8 @@ class sk_interiors extends bootstrap {
             $this->set_gallery('gallery', $id, $this_postmeta, $this->attachments);
             $this->set_ideas_items('ideas_items', $id, $this_postmeta);
             $this->set_ideas_colors('ideas_colors', $id, $this_postmeta, $this->terms);
+            $this->set_thumbnail('thumbnail', $id, $this_postmeta, $this->attachments);
+            $this->set_interior('interior', $id, $this_postmeta, $this->mapplic);
 
         }
 
@@ -89,9 +93,11 @@ class sk_interiors extends bootstrap {
         $data = [];
 
         if (isset($postmeta['interior-ideas-gallery'])) {
-            foreach (unserialize($postmeta['interior-ideas-gallery']) as $id_img) {
-                if (isset($attachments[$id_img])) {
-                    $data['original'] = $attachments[$id_img]['original'];
+            if (!empty(unserialize($postmeta['interior-ideas-gallery']))) {
+                foreach (unserialize($postmeta['interior-ideas-gallery']) as $id_img) {
+                    if (isset($attachments[$id_img])) {
+                        $data['original'] = $attachments[$id_img]['original'];
+                    }
                 }
             }
         }
@@ -126,6 +132,34 @@ class sk_interiors extends bootstrap {
         }
 
         return serialize($color);
+    }
+
+    private function get_thumbnail($postmeta, $attachments) {
+        $data = [];
+
+        if (isset($postmeta['_thumbnail_id'])) {
+            $data['original'] = $attachments[$postmeta['_thumbnail_id']]['original'] ?? "";
+        }
+
+        return serialize($data);
+    }
+
+    private function get_interior($this_postmeta, $mapplic) {
+        $interior = [];
+
+        if (isset($this_postmeta['interior'])) {
+
+            if (!empty(unserialize($this_postmeta['interior']))) {
+                $id_mapplic = unserialize($this_postmeta['interior']);
+                if (isset($mapplic[$id_mapplic[0]])) {
+                    $interior = [
+                        'content' => $mapplic[$id_mapplic[0]]['post_content']
+                    ];
+                }
+            }
+        }
+
+        return serialize($interior);
     }
 
     private function set_id($key, $id) {
@@ -168,4 +202,11 @@ class sk_interiors extends bootstrap {
         $this->interiors_data[$id][$key] = $this->get_ideas_colors($this_postmeta, $terms);
     }
 
+    private function set_thumbnail($key, $id, $this_postmeta, $attachments) {
+        $this->interiors_data[$id][$key] = $this->get_thumbnail($this_postmeta, $attachments);
+    }
+
+    private function set_interior($key, $id, $this_postmeta, $mapplic) {
+        $this->interiors_data[$id][$key] = $this->get_interior($this_postmeta, $mapplic);
+    }
 }

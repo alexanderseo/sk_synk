@@ -54,6 +54,7 @@ class sk_nav_menu extends bootstrap {
             $this->set_object_id('object_id', $item_menu, $postmeta_array);
             $this->set_object('object', $item_menu, $postmeta_array);
             $this->set_data_taxonomies($item_menu, $postmeta_array, $relashionships_array, $this->term_taxonomy, $this->terms);
+            $this->set_classes('classes', $item_menu, $postmeta_array);
         }
 
         $result = $this->addition_objects($this->data_menu, $categories);
@@ -107,7 +108,8 @@ class sk_nav_menu extends bootstrap {
                 'item_parent' => $item_menu['item_parent'],
                 'object_id' => $item_menu['object_id'],
                 'object' => $item_menu['object'],
-                'data_taxonomies' => $item_menu['data_taxonomies']
+                'data_taxonomies' => $item_menu['data_taxonomies'],
+                'classes' => $item_menu['classes']
             ];
         }
 
@@ -237,5 +239,13 @@ class sk_nav_menu extends bootstrap {
         } else {
             $this->data_menu[$menu['ID']]['data_taxonomies'] = $this->get_data_taxonomies($relashionships_array, $term_taxonomy, $terms);
         }
+    }
+
+    private function get_classes($postmeta) {
+        return $postmeta['_menu_item_classes'] ?? "";
+    }
+
+    private function set_classes($key, $menu, $postmeta) {
+        $this->data_menu[$menu['ID']][$key] = $this->get_classes($postmeta);
     }
 }

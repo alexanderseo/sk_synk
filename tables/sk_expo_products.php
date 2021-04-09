@@ -436,6 +436,8 @@ class sk_expo_products extends bootstrap {
         $ids_array = [];
         $expo = unserialize($data_expo);
 
+        if (!isset($expo['entities'])) return "";
+
         foreach ($expo['entities'] as $item_location) {
             $ids_array[] = $item_location['location']['id'];
         }

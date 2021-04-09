@@ -103,27 +103,27 @@ class bootstrap {
         $this->sk_popular_products = $this->sk_popular_products->get();
 
 
-//        $synchronization->start(
-//            $this->sk_attachments,
-//            $this->sk_categories,
-//            $this->sk_fabrics,
-//            $this->sk_variations,
-//            $this->sk_product,
-//            $this->sk_options,
-//            $this->sk_showrooms,
-//            $this->sk_stock_products,
-//            $this->sk_materials,
-//            $this->sk_type_materials,
-//            $this->sk_products_categories_relashionships,
-//            $this->sk_sets_table,
-//            $this->sk_portfolio,
-//            $this->sk_expo_products,
-//            $this->sk_nav_menu,
-//            $this->sk_interiors,
-//            $this->sk_product_collections,
-//            $this->sk_cart_upsell,
-//            $this->sk_popular_products
-//        );
+        $synchronization->start(
+            $this->sk_attachments,
+            $this->sk_categories,
+            $this->sk_fabrics,
+            $this->sk_variations,
+            $this->sk_product,
+            $this->sk_options,
+            $this->sk_showrooms,
+            $this->sk_stock_products,
+            $this->sk_materials,
+            $this->sk_type_materials,
+            $this->sk_products_categories_relashionships,
+            $this->sk_sets_table,
+            $this->sk_portfolio,
+            $this->sk_expo_products,
+            $this->sk_nav_menu,
+            $this->sk_interiors,
+            $this->sk_product_collections,
+            $this->sk_cart_upsell,
+            $this->sk_popular_products
+        );
     }
 
     private function clear_log() {
