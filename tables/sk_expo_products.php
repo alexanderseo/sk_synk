@@ -166,9 +166,12 @@ class sk_expo_products extends bootstrap {
         }
 
         $category = [];
-        $category['name'] = $terms[$category_id]['name'];
-        $category['slug'] = $terms[$category_id]['slug'];
-
+        if (!is_array($category_id)) {
+            if (isset($terms[$category_id])) {
+                $category['name'] = $terms[$category_id]['name'] ?? "";
+                $category['slug'] = $terms[$category_id]['slug'] ?? "";
+            }
+        }
 
         return serialize($category);
     }
