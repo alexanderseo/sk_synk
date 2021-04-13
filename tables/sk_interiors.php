@@ -10,6 +10,7 @@ class sk_interiors extends bootstrap {
     private $postmeta;
     private $attachments;
     private $terms;
+    private $termmeta;
     private $mapplic;
 
     public function __construct() {
@@ -22,6 +23,7 @@ class sk_interiors extends bootstrap {
         $this->attachments = $wordpress['attachments'];
         $this->ids_interiors = $wordpress['posts_ids']['interiors'];
         $this->terms = $wordpress['terms'];
+        $this->termmeta = $wordpress['termmeta'];
         $this->mapplic = $wordpress['mapplic'];
         $this->interiors_data = [];
 
@@ -50,9 +52,10 @@ class sk_interiors extends bootstrap {
             $this->set_interior_description('description', $id, $this_postmeta);
             $this->set_gallery('gallery', $id, $this_postmeta, $this->attachments);
             $this->set_ideas_items('ideas_items', $id, $this_postmeta);
-            $this->set_ideas_colors('ideas_colors', $id, $this_postmeta, $this->terms);
+            $this->set_ideas_colors('ideas_colors', $id, $this_postmeta, $this->terms, $this->termmeta);
             $this->set_thumbnail('thumbnail', $id, $this_postmeta, $this->attachments);
             $this->set_interior('interior', $id, $this_postmeta, $this->mapplic);
+            $this->set_location('location', $id, $this_postmeta, $this->terms);
 
         }
 
@@ -119,19 +122,32 @@ class sk_interiors extends bootstrap {
         return $str_items;
     }
 
-    private function get_ideas_colors($postmeta, $terms) {
+    private function get_ideas_colors($postmeta, $terms, $termmeta) {
         $color = [];
 
         if (isset($postmeta['interior-ideas-colors'])) {
             if (isset($terms[$postmeta['interior-ideas-colors']])) {
                 $color = [
                     'name' => $terms[$postmeta['interior-ideas-colors']]['name'],
-                    'slug' => $terms[$postmeta['interior-ideas-colors']]['slug']
+                    'slug' => $terms[$postmeta['interior-ideas-colors']]['slug'],
+                    'hex' => $this->get_hex($postmeta['interior-ideas-colors'], $termmeta)
                 ];
             }
         }
 
         return serialize($color);
+    }
+
+    private function get_hex($id_color, $termmeta): string {
+        $color_hex = "";
+
+        if (isset($termmeta[$id_color])) {
+            if (isset($termmeta[$id_color]['color-hex-code'])) {
+                $color_hex = $termmeta[$id_color]['color-hex-code'];
+            }
+        }
+
+        return $color_hex;
     }
 
     private function get_thumbnail($postmeta, $attachments) {
@@ -160,6 +176,21 @@ class sk_interiors extends bootstrap {
         }
 
         return serialize($interior);
+    }
+
+    private function get_location($postmeta, $terms) {
+        $location = [];
+
+        if (isset($postmeta['location'])) {
+            if (isset($terms[$postmeta['location']])) {
+                $location = [
+                    'name' => $terms[$postmeta['location']]['name'],
+                    'slug' => $terms[$postmeta['location']]['slug']
+                ];
+            }
+        }
+
+        return serialize($location);
     }
 
     private function set_id($key, $id) {
@@ -198,8 +229,8 @@ class sk_interiors extends bootstrap {
         $this->interiors_data[$id][$key] = $this->get_ideas_items($this_postmeta);
     }
 
-    private function set_ideas_colors($key, $id, $this_postmeta, $terms) {
-        $this->interiors_data[$id][$key] = $this->get_ideas_colors($this_postmeta, $terms);
+    private function set_ideas_colors($key, $id, $this_postmeta, $terms, $termmeta) {
+        $this->interiors_data[$id][$key] = $this->get_ideas_colors($this_postmeta, $terms, $termmeta);
     }
 
     private function set_thumbnail($key, $id, $this_postmeta, $attachments) {
@@ -208,5 +239,9 @@ class sk_interiors extends bootstrap {
 
     private function set_interior($key, $id, $this_postmeta, $mapplic) {
         $this->interiors_data[$id][$key] = $this->get_interior($this_postmeta, $mapplic);
+    }
+
+    private function set_location($key, $id, $this_postmeta, $terms) {
+        $this->interiors_data[$id][$key] = $this->get_location($this_postmeta, $terms);
     }
 }

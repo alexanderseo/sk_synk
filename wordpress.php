@@ -66,6 +66,7 @@ class wordpress {
         );
 
         foreach ($this->posts as $value) {
+
             $array = array();
 
             if ($value['post_type'] == 'attachment') {
@@ -82,11 +83,21 @@ class wordpress {
                             $_[$count - 2] = $_[$count - 2] . $suffix;
 
                             switch ($suffix) {
-                                case '--w_100' : $suffix = 'w100'; break;
-                                case '--w_150' : $suffix = 'w150'; break;
-                                case '--w_300' : $suffix = 'w300'; break;
-                                case '--w_400' : $suffix = 'w400'; break;
-                                case '--w_500' : $suffix = 'w500'; break;
+                                case '--w_100' :
+                                    $suffix = 'w100';
+                                    break;
+                                case '--w_150' :
+                                    $suffix = 'w150';
+                                    break;
+                                case '--w_300' :
+                                    $suffix = 'w300';
+                                    break;
+                                case '--w_400' :
+                                    $suffix = 'w400';
+                                    break;
+                                case '--w_500' :
+                                    $suffix = 'w500';
+                                    break;
                             }
 
                             $array[$suffix] = implode('.', $_);
