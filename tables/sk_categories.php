@@ -248,7 +248,12 @@ class sk_categories extends bootstrap {
 
         if (isset($term_meta['icon'])) {
             if (!empty($term_meta['icon'])) {
-                $icon = serialize($attachments[$term_meta['icon']]['original']);
+                if (isset($attachments[$term_meta['icon']]['original'])) {
+                    $icon = serialize($attachments[$term_meta['icon']]['original']);
+                } else {
+                    $icon = serialize($attachments[$term_meta['icon']]['url']);
+                }
+
             }
         }
 

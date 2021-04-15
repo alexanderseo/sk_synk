@@ -63,6 +63,7 @@ class sk_expo_products extends bootstrap {
 
 
         foreach ($this->ids_products as $id) {
+//            $id = 190894;
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
@@ -81,6 +82,7 @@ class sk_expo_products extends bootstrap {
                 $this->set_slug('slug', $id, $posts);
                 $this->set_name('name', $id, $posts);
                 $this->set_category('category_id', $id, $this->relationships, $this->terms, $this->term_taxonomy);
+                $this->set_parent_category('parent_category', $id, $this->relationships, $this->terms, $this->term_taxonomy);
                 $this->set_category_id('category_id', $id, $this->relationships, $this->term_taxonomy);
                 $this->set_product_attributes('product_attributes', $id, $postmeta);
                 $this->set_subtitle('subtitle', $id, $postmeta);
@@ -93,9 +95,12 @@ class sk_expo_products extends bootstrap {
                 $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
                 $this->set_prototype($id, $postmeta);
             }
+
+
         }
 
-//        var_dump($this->expo_products);
+//        var_dump('================', $k);
+
 
         return $this->expo_products;
     }
@@ -160,6 +165,39 @@ class sk_expo_products extends bootstrap {
                 if ($item['parent'] != '0') {
                     $category_id = $item['term_id'];
                 } else {
+                    $category_id = $item['term_id'];
+                }
+            }
+        }
+
+        $category = [];
+        if (!is_array($category_id)) {
+            if (isset($terms[$category_id])) {
+                $category['name'] = $terms[$category_id]['name'] ?? "";
+                $category['slug'] = $terms[$category_id]['slug'] ?? "";
+            }
+        }
+
+        return serialize($category);
+    }
+
+    private function get_parent_category($id, $relationships, $terms, $taxonomies) {
+        $array = [];
+
+        foreach ($relationships[$id] as $relationship) {
+            if ($taxonomies[$relationship['term_taxonomy_id']]['taxonomy'] == 'product_cat') {
+                if ($taxonomies[$relationship['term_taxonomy_id']]['parent'] == "0") {
+                    if ($taxonomies[$relationship['term_taxonomy_id']]['term_taxonomy_id'] !== '7986') {
+                        $array[] = $taxonomies[$relationship['term_taxonomy_id']];
+                    }
+                }
+            }
+        }
+
+        $category_id = [];
+        foreach ($array as $item) {
+            if (isset($item['term_id'])) {
+                if ($item['parent'] == '0') {
                     $category_id = $item['term_id'];
                 }
             }
@@ -377,6 +415,10 @@ class sk_expo_products extends bootstrap {
 
     private function set_category($key, $id, $relationships, $terms, $taxonomies) {
         $this->expo_products[$id]['category'] = $this->get_category($id, $relationships, $terms, $taxonomies);
+    }
+
+    private function set_parent_category($key, $id, $relationships, $terms, $taxonomies) {
+        $this->expo_products[$id]['parent_category'] = $this->get_parent_category($id, $relationships, $terms, $taxonomies);
     }
 
     private function set_category_id($key, $id, $relationships, $taxonomies) {

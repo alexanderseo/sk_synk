@@ -31,6 +31,7 @@ class sk_popular_products extends bootstrap {
         $data_name = [];
         $data_ids = [];
         foreach ($this->popular_options as $option_item) {
+
             for ($i = 0; $i < 7; $i++) {
                 if (strpos($option_item['option_name'], 'options_tabs_' . $i . '_tab_title') === 0) {
                     $data_name[$i] = [

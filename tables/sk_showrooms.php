@@ -58,7 +58,10 @@ class sk_showrooms extends bootstrap {
             $this->set_hidden($id, $postmeta);
             $this->set_contact_form($id, $postmeta);
             $this->set_blocking($id, $postmeta);
+            $this->set_gallery($id, $postmeta, $this->attachments);
         }
+
+//        var_dump($this->data);
 
         $this->set_log($this->log);
 
@@ -483,4 +486,29 @@ class sk_showrooms extends bootstrap {
 
         $this->data[$id]['blocking'] = serialize($data);
     }
+
+    private function get_gallery($postmeta, $attachments) {
+        $gallery = [];
+
+        if (isset($postmeta['showroom-gallery'])) {
+            foreach (unserialize($postmeta['showroom-gallery']) as $id_img) {
+                $gallery[] = isset($attachments[$id_img]) ? $attachments[$id_img] : "";
+            }
+        }
+        $data = [];
+        foreach ($gallery as $item) {
+            $data[] = [
+                'original' => $item['original'],
+                'w300' => $item['w300'],
+                'w150' => $item['w150'],
+            ];
+        }
+
+        return serialize($data);
+    }
+
+    private function set_gallery($id, $postmeta, $attachments) {
+        $this->data[$id]['gallery'] = $this->get_gallery($postmeta, $attachments);
+    }
+
 }
