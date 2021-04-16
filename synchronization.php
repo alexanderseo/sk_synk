@@ -35,7 +35,8 @@ class synchronization {
         $sk_interiors,
         $sk_product_collections,
         $sk_cart_upsell,
-        $sk_popular_products
+        $sk_popular_products,
+        $sk_page
     ) {
         $tables = array(
             'attachments' => $sk_attachments,
@@ -56,7 +57,8 @@ class synchronization {
             'interiors' => $sk_interiors,
             'sk_product_collections' => $sk_product_collections,
             'cart_upsell' => $sk_cart_upsell,
-            'popular_products' => $sk_popular_products
+            'popular_products' => $sk_popular_products,
+            'sk_page' => $sk_page
         );
 
         foreach ($tables as $key => $value) {

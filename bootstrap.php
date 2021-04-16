@@ -21,6 +21,7 @@ require_once 'tables/sk_interiors.php';
 require_once 'tables/sk_product_collections.php';
 require_once 'tables/sk_cart_upsell.php';
 require_once 'tables/sk_popular_products.php';
+require_once 'tables/sk_page.php';
 
 
 class bootstrap {
@@ -46,6 +47,7 @@ class bootstrap {
     public $sk_product_collections;
     public $sk_cart_upsell;
     public $sk_popular_products;
+    public $sk_page;
 
 
 
@@ -81,6 +83,7 @@ class bootstrap {
         $this->sk_product_collections = sk_product_collections::get_instance();
         $this->sk_cart_upsell = sk_cart_upsell::get_instance();
         $this->sk_popular_products = sk_popular_products::get_instance();
+        $this->sk_page = sk_page::get_instance();
 
         $this->sk_attachments = $this->sk_attachments->get();
         $this->sk_categories = $this->sk_categories->get();
@@ -101,6 +104,7 @@ class bootstrap {
         $this->sk_product_collections = $this->sk_product_collections->get();
         $this->sk_cart_upsell = $this->sk_cart_upsell->get();
         $this->sk_popular_products = $this->sk_popular_products->get();
+        $this->sk_page = $this->sk_page->get();
 
 
         $synchronization->start(
@@ -122,7 +126,8 @@ class bootstrap {
             $this->sk_interiors,
             $this->sk_product_collections,
             $this->sk_cart_upsell,
-            $this->sk_popular_products
+            $this->sk_popular_products,
+            $this->sk_page
         );
     }
 

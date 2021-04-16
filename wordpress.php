@@ -285,6 +285,18 @@ class wordpress {
         return $data;
     }
 
+    private function get_posts_page() {
+        $data = array();
+
+        foreach ($this->posts as $value) {
+            if ($value['post_type'] == 'page') {
+                $data[$value['ID']] = $value;
+            }
+        }
+
+        return $data;
+    }
+
     /**
      * @return array
      * Массив портфолио
@@ -504,5 +516,6 @@ class wordpress {
         $wordpress['options_cart'] = $this->get_options_cart();
         $wordpress['options_tabs'] = $this->get_options_tabs();
         $wordpress['mapplic'] = $this->get_posts_mapplic();
+        $wordpress['page'] = $this->get_posts_page();
     }
 }
