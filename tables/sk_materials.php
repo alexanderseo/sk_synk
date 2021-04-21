@@ -5,14 +5,23 @@ class sk_materials extends bootstrap {
     private static $instance;
 
     private $log;
-
     private $materials;
+    private $term_taxonomy;
+    private $terms;
+    private $termmeta;
+    private $attachments;
 
     public function __construct() {
         parent::__construct();
 
+        global $wordpress;
+
         $this->log = [];
         $this->materials = [];
+        $this->term_taxonomy = $wordpress['term_taxonomy'];
+        $this->terms = $wordpress['terms'];
+        $this->termmeta = $wordpress['termmeta'];
+        $this->attachments = $wordpress['attachments'];
     }
 
     public static function get_instance() {
@@ -24,18 +33,19 @@ class sk_materials extends bootstrap {
     }
 
     public function get() {
-        global $wordpress;
 
-        foreach ($wordpress['term_taxonomy'] as $taxonomy) {
+        foreach ($this->term_taxonomy as $taxonomy) {
             if ($taxonomy['taxonomy'] == 'pa_material') {
+
                 $this->set_id($taxonomy);
                 $this->set_taxonomy($taxonomy);
                 $this->set_description($taxonomy);
-                $this->set_name($taxonomy);
-                $this->set_slug($taxonomy);
-                $this->set_material_image($taxonomy);
-                $this->set_material_type($taxonomy);
-                $this->set_material_available($taxonomy);
+                $this->set_name($taxonomy, $this->terms);
+                $this->set_slug($taxonomy, $this->terms);
+                $this->set_material_image($taxonomy, $this->termmeta, $this->attachments);
+                $this->set_material_type($taxonomy, $this->termmeta);
+                $this->set_material_available($taxonomy, $this->termmeta);
+
             }
         }
 
@@ -45,47 +55,32 @@ class sk_materials extends bootstrap {
         return $this->materials;
     }
 
-    private function get_name($taxonomy) {
-        global $wordpress;
-
-        return  $wordpress['terms'][$taxonomy['term_taxonomy_id']]['name'];
+    private function get_name($taxonomy, $terms): string {
+        return  $terms[$taxonomy['term_taxonomy_id']]['name'] ?? "";
     }
 
-    private function get_slug($taxonomy) {
-        global $wordpress;
-
-        return  $wordpress['terms'][$taxonomy['term_taxonomy_id']]['slug'];
+    private function get_slug($taxonomy, $terms): string {
+        return  $terms[$taxonomy['term_taxonomy_id']]['slug'] ?? "";
     }
 
-    private function get_material_image($taxonomy) {
-        global $wordpress;
+    private function get_material_image($taxonomy, $termmeta, $attachments): string {
         $images = [];
 
-        $image_id = isset($wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-image']) ? $wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-image'] : "";
+        $image_id = $termmeta[$taxonomy['term_taxonomy_id']]['material-image'] ?? "";
 
-        if (!$image_id) {
-            return serialize($images);
-        }
+        if (!$image_id) return serialize($images);
 
-        $images = $wordpress['attachments'][$image_id]['original'];
+        $images = $attachments[$image_id]['original'];
 
         return serialize($images);
     }
 
-    private function get_material_type($taxonomy) {
-        global $wordpress;
-
-        $material_type = isset($wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-type']) ? $wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-type'] : "";
-
-        return $material_type;
+    private function get_material_type($taxonomy, $termmeta): string {
+        return $termmeta[$taxonomy['term_taxonomy_id']]['material-type'] ?? "";
     }
 
-    private function get_material_available($taxonomy) {
-        global $wordpress;
-
-        $material_available = isset($wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-sample-available']) ? $wordpress['termmeta'][$taxonomy['term_taxonomy_id']]['material-sample-available'] : "";
-
-        return $material_available;
+    private function get_material_available($taxonomy, $termmeta): string {
+        return $termmeta[$taxonomy['term_taxonomy_id']]['material-sample-available'] ?? "";
     }
 
     private function set_id($taxonomy) {
@@ -100,24 +95,24 @@ class sk_materials extends bootstrap {
         $this->materials[$taxonomy['term_taxonomy_id']]['description'] = $taxonomy['description'];
     }
 
-    private function set_name($taxonomy) {
-        $this->materials[$taxonomy['term_taxonomy_id']]['name'] = $this->get_name($taxonomy);
+    private function set_name($taxonomy, $terms) {
+        $this->materials[$taxonomy['term_taxonomy_id']]['name'] = $this->get_name($taxonomy, $terms);
     }
 
-    private function set_slug($taxonomy) {
-        $this->materials[$taxonomy['term_taxonomy_id']]['slug'] = $this->get_slug($taxonomy);
+    private function set_slug($taxonomy, $terms) {
+        $this->materials[$taxonomy['term_taxonomy_id']]['slug'] = $this->get_slug($taxonomy, $terms);
     }
 
-    private function set_material_image($taxonomy) {
-        $this->materials[$taxonomy['term_taxonomy_id']]['material_image'] = $this->get_material_image($taxonomy);
+    private function set_material_image($taxonomy, $termmeta, $attachments) {
+        $this->materials[$taxonomy['term_taxonomy_id']]['material_image'] = $this->get_material_image($taxonomy, $termmeta, $attachments);
     }
 
-    private function set_material_type($taxonomy) {
-        $this->materials[$taxonomy['term_taxonomy_id']]['material_type'] = $this->get_material_type($taxonomy);
+    private function set_material_type($taxonomy, $termmeta) {
+        $this->materials[$taxonomy['term_taxonomy_id']]['material_type'] = $this->get_material_type($taxonomy, $termmeta);
     }
 
-    private function set_material_available($taxonomy) {
-        $this->materials[$taxonomy['term_taxonomy_id']]['material_available'] = $this->get_material_available($taxonomy);
+    private function set_material_available($taxonomy, $termmeta) {
+        $this->materials[$taxonomy['term_taxonomy_id']]['material_available'] = $this->get_material_available($taxonomy, $termmeta);
     }
 
 }

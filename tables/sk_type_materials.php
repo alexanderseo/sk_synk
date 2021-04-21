@@ -3,15 +3,19 @@
 class sk_type_materials extends bootstrap {
     private static $instance;
 
-    private $log;
-
     private $type_materials;
+    private $term_taxonomy;
+    private $terms;
 
     public function __construct() {
         parent::__construct();
 
-        $this->log = [];
+        global $wordpress;
+
         $this->type_materials = [];
+        $this->terms = $wordpress['terms'];
+        $this->term_taxonomy = $wordpress['term_taxonomy'];
+
     }
 
     public static function get_instance() {
@@ -23,34 +27,29 @@ class sk_type_materials extends bootstrap {
     }
 
     public function get() {
-        global $wordpress;
 
-        foreach ($wordpress['term_taxonomy'] as $taxonomy) {
+        foreach ($this->term_taxonomy as $taxonomy) {
             if ($taxonomy['taxonomy'] == 'materials') {
+
                 $this->set_id($taxonomy);
                 $this->set_taxonomy($taxonomy);
                 $this->set_description($taxonomy);
-                $this->set_name($taxonomy);
-                $this->set_slug($taxonomy);
+                $this->set_name($taxonomy, $this->terms);
+                $this->set_slug($taxonomy, $this->terms);
+
             }
         }
-
-        $this->set_log($this->log);
 //        var_dump($this->type_materials);
 
         return $this->type_materials;
     }
 
-    private function get_name($taxonomy) {
-        global $wordpress;
-
-        return  $wordpress['terms'][$taxonomy['term_taxonomy_id']]['name'];
+    private function get_name($taxonomy, $terms): string {
+        return  $terms[$taxonomy['term_taxonomy_id']]['name'] ?? "";
     }
 
-    private function get_slug($taxonomy) {
-        global $wordpress;
-
-        return  $wordpress['terms'][$taxonomy['term_taxonomy_id']]['slug'];
+    private function get_slug($taxonomy, $terms): string {
+        return  $terms[$taxonomy['term_taxonomy_id']]['slug'] ?? "";
     }
 
     private function set_id($taxonomy) {
@@ -65,12 +64,12 @@ class sk_type_materials extends bootstrap {
         $this->type_materials[$taxonomy['term_taxonomy_id']]['description'] = $taxonomy['description'];
     }
 
-    private function set_name($taxonomy) {
-        $this->type_materials[$taxonomy['term_taxonomy_id']]['name'] = $this->get_name($taxonomy);
+    private function set_name($taxonomy, $terms) {
+        $this->type_materials[$taxonomy['term_taxonomy_id']]['name'] = $this->get_name($taxonomy, $terms);
     }
 
-    private function set_slug($taxonomy) {
-        $this->type_materials[$taxonomy['term_taxonomy_id']]['slug'] = $this->get_slug($taxonomy);
+    private function set_slug($taxonomy, $terms) {
+        $this->type_materials[$taxonomy['term_taxonomy_id']]['slug'] = $this->get_slug($taxonomy, $terms);
     }
 
 }

@@ -8,6 +8,7 @@ require_once 'helpers/variable_attributes.php';
 require_once 'helpers/GetUpsell.php';
 require_once 'helpers/GetCrossSells.php';
 require_once 'sk_sets.php';
+require_once 'helpers/VariableAttributesCheck.php';
 
 class sk_product extends bootstrap {
     private static $instance;
@@ -33,6 +34,7 @@ class sk_product extends bootstrap {
     private $terms_by_slug;
 
     private $filterHelper;
+    private $complectVariableAttributes;
 
 
     public function __construct() {
@@ -54,6 +56,7 @@ class sk_product extends bootstrap {
         $this->termmeta = $wordpress['termmeta'];
         $this->terms_by_slug = $wordpress['terms_by_slug'];
         $this->filterHelper = new FilterTypeProduct($this->relashionships, $this->taxonomy, $this->terms);
+        $this->complectVariableAttributes = new VariableAttributesCheck();
 
     }
 
@@ -73,13 +76,15 @@ class sk_product extends bootstrap {
                     if ($this->filterHelper->filter_expo_product($id)) {
 
 //                    $id = 164811;
-//                        $id = 155427;
+//                    $id = 155427;
 
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
                         $postmeta_array = $this->set_postmeta_array_by_id($id, $this->postmeta);
                         $category_id = $this->get_category_id($id, $relashionships_array, $this->taxonomy);
                         $caterory_item = $this->get_category($category_id, $categories);
+
+                        $attributes_for_equals = $this->complectVariableAttributes->complect_attributes($id, $variations);
 
                         $this->set_id('id', $id);
                         $this->set_modified_unix('modified_unix', $id, $products_array);
@@ -94,7 +99,7 @@ class sk_product extends bootstrap {
                         $this->set_interior_photos('interior_photos', $id, $postmeta_array, $this->attachments);
                         $this->set_up_sells_ids('up_sells_ids', $id, $postmeta_array, $variations, $this->all_products, $this->postmeta, $this->all_ids_products, $fabrics, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->termmeta, $this->terms_by_slug, $materials);
                         $this->set_recommended_categories('recommended_categories', $id, $caterory_item, $categories);
-                        $this->set_attributes($id, $postmeta_array, $fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->postmeta, $this->termmeta, $materials);
+                        $this->set_attributes($id, $postmeta_array, $fabrics, $relashionships_array, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->postmeta, $this->termmeta, $materials, $attributes_for_equals);
                         $this->set_default_attributes('default_attributes', $id, $postmeta_array, $this->woocommerce_attribute_taxonomies, $this->terms_by_slug);
                         $this->set_cross_sells('cross_sells', $id, $postmeta_array, $category_id, $categories, $variations, $this->all_products, $this->postmeta, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $materials, $this->all_ids_products, $fabrics, $this->termmeta, $this->terms_by_slug);
                         $this->set_popular_products($id, $postmeta_array);
@@ -126,28 +131,26 @@ class sk_product extends bootstrap {
     }
 
     private function get_default_variation_id($postmeta): string {
-        return isset($postmeta['_default_variation_id']) ? $postmeta['_default_variation_id'] : "";
+        return $postmeta['_default_variation_id'] ?? "";
     }
 
     private function get_product_attributes($postmeta): string {
-        return isset($postmeta['_product_attributes']) ? $postmeta['_product_attributes'] : "";
+        return $postmeta['_product_attributes'] ?? "";
     }
 
     private function get_subtitle($postmeta): string {
-        return isset($postmeta['_product_classification']) ? $postmeta['_product_classification'] : "";
+        return $postmeta['_product_classification'] ?? "";
     }
 
     public function get_video($postmeta, $attachments, $attachments_with_parent): string {
-        $video_id = isset($postmeta['_product_video']) ? $postmeta['_product_video'] : "";
+
+        $video_id = $postmeta['_product_video'] ?? "";
+
         $data = [];
 
-        if (empty($video_id)) {
-            return serialize($data);
-        }
+        if (empty($video_id)) return serialize($data);
 
-        if (isset($attachments[$video_id])) {
-            $data['url'] = $attachments[$video_id]['url'];
-        }
+        $data['url'] = isset($attachments[$video_id]) ? $attachments[$video_id]['url'] : "";
 
         foreach ($attachments_with_parent as $key => $value) {
             if (isset($attachments_with_parent[$key]['post_parent'])) {
@@ -163,16 +166,14 @@ class sk_product extends bootstrap {
     }
 
     private function get_collection_id($postmeta): string {
-        return isset($postmeta['_product_collection']) ? $postmeta['_product_collection'] : "";
+        return $postmeta['_product_collection'] ?? "";
     }
 
     private function get_interior_photos($postmeta, $attachments): string {
         $data = [];
         $product_interior = isset($postmeta['_product_interior']) ? explode(',', $postmeta['_product_interior']) : [];
 
-        if (empty($product_interior)) {
-            return serialize($data);
-        }
+        if (empty($product_interior)) return serialize($data);
 
         foreach ($product_interior as $value) {
             if (isset($attachments[$value])) {
@@ -198,11 +199,9 @@ class sk_product extends bootstrap {
         if (isset($recommended_categories['recommended_categories'])) {
             foreach (explode(',', $recommended_categories['recommended_categories']) as $value) {
 
-                $category = isset($categories[$value]) ? $categories[$value] : [];
+                $category = $categories[$value] ?? [];
 
-                if (empty($category)) {
-                    return serialize($data);
-                }
+                if (empty($category)) return serialize($data);
 
                 $data[$value]['name'] = $category['name'];
                 $data[$value]['slug'] = $category['slug'];
@@ -247,31 +246,15 @@ class sk_product extends bootstrap {
     }
 
     private function get_popular_products($id, $postmeta) {
-        $data = array();
+        $data = [];
 
-        if ($this->has_meta_popular_products($postmeta, 'product-popular')) {
-            $data['popular'] = $postmeta['product-popular'];
-        } else {
-            $data['popular'] = 0;
-        }
+        $data['popular'] = ($this->has_meta_popular_products($postmeta, 'product-popular')) ? $postmeta['product-popular'] : 0;
 
-        if ($this->has_meta_popular_products($postmeta, 'product-popular-order')) {
-            $data['popular_order'] = $postmeta['product-popular-order'];
-        } else {
-            $data['popular_order'] = 0;
-        }
+        $data['popular_order'] = ($this->has_meta_popular_products($postmeta, 'product-popular-order')) ? $postmeta['product-popular-order'] : 0;
 
-        if ($this->has_meta_popular_products($postmeta, 'product-popular-category')) {
-            $data['category'] = $postmeta['product-popular-category'];
-        } else {
-            $data['category'] = 0;
-        }
+        $data['category'] = ($this->has_meta_popular_products($postmeta, 'product-popular-category')) ? $postmeta['product-popular-category'] : 0;
 
-        if ($this->has_meta_popular_products($postmeta, 'product-popular-category-order')) {
-            $data['category_order'] = $postmeta['product-popular-category-order'];
-        } else {
-            $data['category_order'] = 0;
-        }
+        $data['category_order'] = ($this->has_meta_popular_products($postmeta, 'product-popular-category-order')) ? $postmeta['product-popular-category-order'] : 0;
 
         return serialize($data);
     }
@@ -302,7 +285,6 @@ class sk_product extends bootstrap {
 
     private function set_modified_unix($key, $id, $array): void {
         $this->products[$id][$key] = $this->get_modified_unix($id, $array);
-
     }
 
     private function set_category_id($key, $id, $category_id): void {
@@ -350,20 +332,51 @@ class sk_product extends bootstrap {
      * @param $fabrics
      * Устанавливаем static и variable атрибуты товара
      */
-    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials): void {
+    private function set_attributes($id, $postmeta, $fabrics, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials, $attributes_for_equals): void {
 
         if (isset($postmeta['_product_attributes'])) {
             $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
             $this->products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
-            $this->products[$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
+
+            $temp_variable_attributes = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
+            $this->products[$id]['variable_attributes'] = $this->handle_filter_attributes($temp_variable_attributes, $attributes_for_equals);
         }
 
     }
 
+    /**
+     * @param $temp_attributes
+     * @param $equals_attributes
+     * @return string
+     * Метод медленный, надо переделать как-то
+     */
+    private function handle_filter_attributes($temp_attributes, $equals_attributes) {
+        $data = [];
+        $data_attributes = [];
+        $array_attributes = unserialize($temp_attributes);
+
+        foreach ($equals_attributes as $key_attributes => $item_attributes) {
+            foreach ($array_attributes as $item_temp) {
+                if ($key_attributes == $item_temp['taxonomy_slug']) {
+                    foreach ($item_temp['taxonomy_options'] as $option) {
+                        foreach ($item_attributes as $term_slug) {
+
+                            if ($option['term_slug'] == $term_slug['term_slug']) {
+                                $data[] = $item_temp;
+                            }
+                            $data_attributes = array_unique($data, SORT_REGULAR);
+                        }
+                    }
+                }
+            }
+        }
+
+        return serialize($data_attributes);
+    }
+
     private function set_default_attributes($key, $id, $postmeta, $woocommerce_attribute_taxonomies, $terms_by_slug): void {
         $this->products[$id][$key] = $this->get_default_attributes($postmeta, $woocommerce_attribute_taxonomies, $terms_by_slug);
-
     }
 
     /**

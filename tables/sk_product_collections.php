@@ -64,12 +64,7 @@ class sk_product_collections extends bootstrap {
     private function get_name(int $id, array $terms): string {
         $name = "";
 
-        if (isset($terms[$id])) {
-//            $name = mb_convert_encoding($terms[$id]['name'], "UTF-8");
-            $name = $terms[$id]['name'];
-        }
-
-//        var_dump('===========', $name);
+        if (isset($terms[$id])) $name = $terms[$id]['name'];
 
         return $name;
     }
@@ -77,9 +72,7 @@ class sk_product_collections extends bootstrap {
     private function get_slug(int $id, array $terms): string {
         $slug = "";
 
-        if (isset($terms[$id])) {
-            $slug = $terms[$id]['slug'];
-        }
+        if (isset($terms[$id])) $slug = $terms[$id]['slug'];
 
         return $slug;
     }

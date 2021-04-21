@@ -55,28 +55,33 @@ class sk_variations extends bootstrap {
 
         if (isset($this->all_posts_ids['variations'])) {
             foreach ($this->all_posts_ids['variations'] as $id) {
-//                $id = 190525;
+//                $id = 164826;
+//                $id = 164825;
 
                 $posts_array = $this->set_products_array_by_id($id, $this->all_posts);
                 $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
                 $postmeta_array = $this->set_postmeta_array_by_id($id, $this->postmeta);
 
-                $this->set_id($id);
-                $this->set_parent_id($id, $posts_array);
-                $this->set_sku($id, $postmeta_array);
-                $this->set_regular_price($id, $postmeta_array);
-                $this->set_sale_price($id, $postmeta_array);
-                $this->set_thumbnail($id, $postmeta_array, $this->attachments);
-                $this->set_gallery($id, $postmeta_array, $this->attachments);
-                $this->set_fabric_id($id, $postmeta_array);
-                $this->set_drawing($id, $postmeta_array, $this->attachments);
-                $this->set_length($id, $postmeta_array);
-                $this->set_width($id, $postmeta_array);
-                $this->set_height($id, $postmeta_array);
-                $this->set_weight($id, $postmeta_array);
-                $this->set_sleep_area($id, $postmeta_array);
-                $this->set_attributes($id, $this->posts_by_post_name, $postmeta_array, $this->terms_by_slug, $this->woocommerce_attribute_taxonomies, $fabrics, $this->termmeta, $this->terms, $this->attachments, $this->postmeta);
-                $this->set_stock($id, $postmeta_array);
+                if ($this->check_visible_variation($postmeta_array)) {
+
+                    $this->set_id($id);
+                    $this->set_parent_id($id, $posts_array);
+                    $this->set_sku($id, $postmeta_array);
+                    $this->set_regular_price($id, $postmeta_array);
+                    $this->set_sale_price($id, $postmeta_array);
+                    $this->set_thumbnail($id, $postmeta_array, $this->attachments);
+                    $this->set_gallery($id, $postmeta_array, $this->attachments);
+                    $this->set_fabric_id($id, $postmeta_array);
+                    $this->set_drawing($id, $postmeta_array, $this->attachments);
+                    $this->set_length($id, $postmeta_array);
+                    $this->set_width($id, $postmeta_array);
+                    $this->set_height($id, $postmeta_array);
+                    $this->set_weight($id, $postmeta_array);
+                    $this->set_sleep_area($id, $postmeta_array);
+                    $this->set_attributes($id, $this->posts_by_post_name, $postmeta_array, $this->terms_by_slug, $this->woocommerce_attribute_taxonomies, $fabrics, $this->termmeta, $this->terms, $this->attachments, $this->postmeta);
+                    $this->set_stock($id, $postmeta_array);
+
+                }
             }
         }
 
@@ -85,36 +90,46 @@ class sk_variations extends bootstrap {
         return $this->variations;
     }
 
-    private function get_id($id) {
+    private function check_visible_variation($this_postmeta) {
+        $product_hidden = $this_postmeta['_product_hidden'] ?? 'No';
+
+        if ($product_hidden == 'No') {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private function get_id($id): int {
         return (int) $id;
     }
 
-    private function get_parent_id($posts) {
-        return isset($posts['post_parent']) ? $posts['post_parent'] : "";
+    private function get_parent_id($posts): string {
+        return $posts['post_parent'] ?? "";
     }
 
-    private function get_fabric_id($postmeta) {
-        return isset($postmeta['_product_fabric']) ? $postmeta['_product_fabric'] : "";
+    private function get_fabric_id($postmeta): string {
+        return $postmeta['_product_fabric'] ?? "";
     }
 
-    private function get_length($postmeta) {
-        return isset($postmeta['_length']) ? $postmeta['_length'] : "";
+    private function get_length($postmeta): string {
+        return $postmeta['_length'] ?? "";
     }
 
-    private function get_width($postmeta) {
-        return isset($postmeta['_width']) ? $postmeta['_width'] : "";
+    private function get_width($postmeta): string {
+        return $postmeta['_width'] ?? "";
     }
 
-    private function get_height($postmeta) {
-        return isset($postmeta['_height']) ? $postmeta['_height'] : "";
+    private function get_height($postmeta): string {
+        return $postmeta['_height'] ?? "";
     }
 
-    private function get_weight($postmeta) {
-        return isset($postmeta['_product_weight']) ? $postmeta['_product_weight'] : "";
+    private function get_weight($postmeta): string {
+        return $postmeta['_product_weight'] ?? "";
     }
 
-    private function get_sleep_area($postmeta) {
-        return isset($postmeta['_product_sleeping_area']) ? $postmeta['_product_sleeping_area'] : "";
+    private function get_sleep_area($postmeta): string {
+        return $postmeta['_product_sleeping_area'] ?? "";
     }
 
     private function get_attributes($posts, $postmeta, $terms_by_slug, $attribute_taxonomies, $fabrics, $termmeta, $terms, $attachments, $all_postmeta) {
@@ -133,8 +148,8 @@ class sk_variations extends bootstrap {
 
                 if ($key == 'attribute_pa_material') {
                     $slug = $postmeta[$key];
-                    $image_id = isset($termmeta[$terms_by_slug[$slug]['term_id']]['material-image']) ? $termmeta[$terms_by_slug[$slug]['term_id']]['material-image'] : "";
-                    $data[$key]['details']['image']['w100'] = isset($attachments[$image_id]['w100']) ? $attachments[$image_id]['w100'] : "";
+                    $image_id = $termmeta[$terms_by_slug[$slug]['term_id']]['material-image'] ?? "";
+                    $data[$key]['details']['image']['w100'] = $attachments[$image_id]['w100'] ?? "";
                 }
             }
         }
