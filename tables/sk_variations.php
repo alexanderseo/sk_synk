@@ -55,7 +55,7 @@ class sk_variations extends bootstrap {
 
         if (isset($this->all_posts_ids['variations'])) {
             foreach ($this->all_posts_ids['variations'] as $id) {
-//                $id = 164826;
+//                $id = 164544;
 //                $id = 164825;
 
                 $posts_array = $this->set_products_array_by_id($id, $this->all_posts);
@@ -91,12 +91,14 @@ class sk_variations extends bootstrap {
     }
 
     private function check_visible_variation($this_postmeta) {
-        $product_hidden = $this_postmeta['_product_hidden'] ?? 'No';
-
-        if ($product_hidden == 'No') {
-            return true;
+        if (isset($this_postmeta['_product_hidden'])) {
+            if ($this_postmeta['_product_hidden'] == 'no') {
+                return true;
+            } else {
+                return false;
+            }
         } else {
-            return false;
+            return true;
         }
     }
 

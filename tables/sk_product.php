@@ -372,6 +372,8 @@ class sk_product extends bootstrap {
             }
         }
 
+        $data_attributes = array_values($data_attributes);
+
         return serialize($data_attributes);
     }
 
