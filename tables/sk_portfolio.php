@@ -45,6 +45,7 @@ class sk_portfolio extends bootstrap {
             $this->set_modified_unix('modified_unix', $id, $post_portfolio);
             $this->set_image('image', $id, $this_postmeta, $this->attachments);
             $this->set_content_block('content_block', $id, $this_postmeta, $this->attachments);
+            $this->set_detail_block('detail_block', $id, $this_postmeta);
 
         }
 
@@ -90,7 +91,7 @@ class sk_portfolio extends bootstrap {
     private function get_content_block($postmeta, $attachments) {
         $data = [];
 
-        $count = $this->get_count_block($postmeta);
+        $count = $this->get_count_block($postmeta, 'blocks');
         if ($count == 0) return "";
 
         $ids_images = $this->get_ids_images($postmeta);
@@ -108,14 +109,6 @@ class sk_portfolio extends bootstrap {
         }
 
         return serialize($data);
-    }
-
-    private function get_count_block($postmeta): int {
-        $count = 0;
-
-        $count = $postmeta['blocks'] ?? 0;
-
-        return $count;
     }
 
     private function get_ids_images($postmeta): array {
@@ -156,6 +149,37 @@ class sk_portfolio extends bootstrap {
         return $result;
     }
 
+    private function get_detail_block($postmeta) {
+        $data = [];
+
+        $count = $this->get_count_block($postmeta, 'details-rows');
+        if ($count == 0) return "";
+
+        for ($i = 0; $i < $count; $i++) {
+            foreach ($postmeta as $name_key => $value_item) {
+                if (stripos($name_key, 'details-rows_' . $i . '_details-title') === 0) {
+                    $data[$i]['title'][$name_key] = $value_item;
+                }
+                if (stripos($name_key, 'details-rows_' . $i . '_details-content') === 0) {
+                    $data[$i]['content'][$name_key] = $value_item;
+                }
+                if (stripos($name_key, 'details-rows_' . $i . '_details-link') === 0) {
+                    $data[$i]['link'][$name_key] = $value_item;
+                }
+            }
+        }
+
+        return serialize($data);
+    }
+
+    private function get_count_block($postmeta, $key): int {
+        $count = 0;
+
+        $count = $postmeta[$key] ?? 0;
+
+        return $count;
+    }
+
     private function set_id($key, $id): void {
         $this->portfolio_data[$id][$key] = $this->get_id($id);
     }
@@ -186,5 +210,9 @@ class sk_portfolio extends bootstrap {
 
     private function set_content_block($key, $id, $this_postmeta, $attachments): void {
         $this->portfolio_data[$id][$key] = $this->get_content_block($this_postmeta, $attachments);
+    }
+
+    private function set_detail_block($key, $id, $this_postmeta): void {
+        $this->portfolio_data[$id][$key] = $this->get_detail_block($this_postmeta);
     }
 }
