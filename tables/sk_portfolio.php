@@ -46,6 +46,7 @@ class sk_portfolio extends bootstrap {
             $this->set_image('image', $id, $this_postmeta, $this->attachments);
             $this->set_content_block('content_block', $id, $this_postmeta, $this->attachments);
             $this->set_detail_block('detail_block', $id, $this_postmeta);
+            $this->set_exploited_products('exploited_products', $id, $this_postmeta);
 
         }
 
@@ -180,6 +181,10 @@ class sk_portfolio extends bootstrap {
         return $count;
     }
 
+    private function get_exploited_products($postmeta): string {
+        return $postmeta['exploited-products'] ?? "";
+    }
+
     private function set_id($key, $id): void {
         $this->portfolio_data[$id][$key] = $this->get_id($id);
     }
@@ -214,5 +219,9 @@ class sk_portfolio extends bootstrap {
 
     private function set_detail_block($key, $id, $this_postmeta): void {
         $this->portfolio_data[$id][$key] = $this->get_detail_block($this_postmeta);
+    }
+
+    private function set_exploited_products($key, $id, $this_postmeta): void {
+        $this->portfolio_data[$id][$key] = $this->get_exploited_products($this_postmeta);
     }
 }
