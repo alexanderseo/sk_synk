@@ -34,6 +34,7 @@ class sk_portfolio extends bootstrap {
     public function get() {
 
         foreach ($this->ids_portfolio as $id) {
+//            $id = 191755;
             $post_portfolio = $this->portfolio[$id];
             $this_postmeta = $this->postmeta[$id];
 
@@ -106,6 +107,9 @@ class sk_portfolio extends bootstrap {
                 if (stripos($name_key, 'blocks_' . $i . '_image') === 0) {
                     $data[$i]['image'][$name_key] = $this->add_image($value_item, $this_array_images);
                 }
+                if (stripos($name_key, 'blocks_' . $i . '_template-select') === 0) {
+                    $data[$i]['template'][$name_key] = $value_item;
+                }
             }
         }
 
@@ -116,7 +120,7 @@ class sk_portfolio extends bootstrap {
         $data = [];
 
         foreach ($postmeta as $name_key => $value_item) {
-            if (stripos($name_key, '_image-') == 8) {
+            if (stripos($name_key, '_image-') == 8 || stripos($name_key, '_image-') == 9) {
                 $data[] = $value_item;
             }
         }
