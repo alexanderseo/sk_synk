@@ -58,7 +58,7 @@ class sk_interiors extends bootstrap {
             $this->set_location('location', $id, $this_postmeta, $this->terms);
         }
 
-//        var_dump('-----------', $this->interiors_data);
+        var_dump('-----------', $this->interiors_data);
 
         return $this->interiors_data;
     }
@@ -180,16 +180,14 @@ class sk_interiors extends bootstrap {
     private function get_location($postmeta, $terms, $callback) {
         $location = [];
 
-        if (isset($postmeta['location'])) {
-            if (isset($terms[$postmeta['location']])) {
-                $location = [
-                    'name' => $terms[$postmeta['location']]['name'],
-                    'slug' => $terms[$postmeta['location']]['slug']
-                ];
-            }
+        if ($location = $terms[$postmeta['location']] ?? []) {
+            $location = [
+                'name' => $location['name'],
+                'slug' => $location['slug']
+            ];
         }
 
-        $callback($location['slug']);
+        $callback($location['slug'] ?? "");
 
         return serialize($location);
     }
