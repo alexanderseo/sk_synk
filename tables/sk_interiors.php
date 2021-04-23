@@ -56,7 +56,6 @@ class sk_interiors extends bootstrap {
             $this->set_thumbnail('thumbnail', $id, $this_postmeta, $this->attachments);
             $this->set_interior('interior', $id, $this_postmeta, $this->mapplic);
             $this->set_location('location', $id, $this_postmeta, $this->terms);
-
         }
 
 //        var_dump('-----------', $this->interiors_data);
@@ -69,19 +68,19 @@ class sk_interiors extends bootstrap {
     }
 
     private function get_name($interiors) {
-        return isset($interiors['post_title']) ? $interiors['post_title'] : "";
+        return $interiors['post_title'] ?? "";
     }
 
     private function get_slug($interiors) {
-        return isset($interiors['post_name']) ? $interiors['post_name'] : "";
+        return $interiors['post_name'] ?? "";
     }
 
     private function get_content($interiors) {
-        return isset($interiors['post_content']) ? $interiors['post_content'] : "";
+        return $interiors['post_content'] ?? "";
     }
 
     private function get_status($interiors) {
-        return isset($interiors['post_status']) ? $interiors['post_status'] : "";
+        return $interiors['post_status'] ?? "";
     }
 
     private function get_modified_unix($interiors) {
@@ -178,7 +177,7 @@ class sk_interiors extends bootstrap {
         return serialize($interior);
     }
 
-    private function get_location($postmeta, $terms) {
+    private function get_location($postmeta, $terms, $callback) {
         $location = [];
 
         if (isset($postmeta['location'])) {
@@ -189,6 +188,8 @@ class sk_interiors extends bootstrap {
                 ];
             }
         }
+
+        $callback($location['slug']);
 
         return serialize($location);
     }
@@ -241,7 +242,20 @@ class sk_interiors extends bootstrap {
         $this->interiors_data[$id][$key] = $this->get_interior($this_postmeta, $mapplic);
     }
 
+    /**
+     * @param $key
+     * @param $id
+     * @param $this_postmeta
+     * @param $terms
+     * Чтобы меньше бегать циклом
+     */
     private function set_location($key, $id, $this_postmeta, $terms) {
-        $this->interiors_data[$id][$key] = $this->get_location($this_postmeta, $terms);
+        $this->interiors_data[$id][$key] = $this->get_location(
+            $this_postmeta,
+            $terms,
+            function($slug) use ($id) {
+                $this->interiors_data[$id]['location_slug'] = $slug;
+            });
     }
+
 }
