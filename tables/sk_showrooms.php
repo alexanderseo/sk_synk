@@ -40,459 +40,186 @@ class sk_showrooms extends bootstrap {
             $posts = $this->posts[$id];
             $postmeta = $this->postmeta[$id];
 
-            $this->set_id($id);
-            $this->set_slug($id, $posts);
-            $this->set_name($id, $posts);
-            $this->set_group($id, $postmeta, $this->terms, $this->termmeta);
-            $this->set_cover($id, $postmeta, $this->attachments);
-            $this->set_address($id, $postmeta);
-            $this->set_coordinates($id, $postmeta);
-            $this->set_working_hours($id, $postmeta);
-            $this->set_description($id, $postmeta);
-            $this->set_city($id, $postmeta, $this->terms);
-            $this->set_subway($id, $postmeta);
-            $this->set_area($id, $postmeta);
-            $this->set_services($id, $postmeta);
-            $this->set_buttons($id, $postmeta, $this->attachments);
-            $this->set_order($id, $postmeta);
-            $this->set_hidden($id, $postmeta);
-            $this->set_contact_form($id, $postmeta);
-            $this->set_blocking($id, $postmeta);
-            $this->set_gallery($id, $postmeta, $this->attachments);
+            if ($this->filter_sklad($postmeta)) {
+                $this->set_id($id);
+                $this->set_slug($id, $posts);
+                $this->set_name($id, $posts);
+                $this->set_group($id, $postmeta, $this->terms, $this->termmeta);
+                $this->set_cover($id, $postmeta, $this->attachments);
+                $this->set_address($id, $postmeta);
+                $this->set_coordinates($id, $postmeta);
+                $this->set_working_hours($id, $postmeta);
+                $this->set_description($id, $postmeta);
+                $this->set_city($id, $postmeta, $this->terms);
+                $this->set_subway($id, $postmeta);
+                $this->set_area($id, $postmeta);
+                $this->set_services($id, $postmeta);
+                $this->set_buttons($id, $postmeta, $this->attachments);
+                $this->set_order($id, $postmeta);
+                $this->set_hidden($id, $postmeta);
+                $this->set_contact_form($id, $postmeta);
+                $this->set_blocking($id, $postmeta);
+                $this->set_gallery($id, $postmeta, $this->attachments);
+            }
         }
 
 //        var_dump($this->data);
 
-        $this->set_log($this->log);
+//        $this->set_log($this->log);
 
         return $this->data;
     }
 
-    private function set_id($id) {
-        $this->data[$id]['id'] = (int) $id;
-    }
-
-    private function set_slug($id, $post) {
-        if (isset($post['post_name'])) {
-            if (empty($post['post_name'])) {
-                $this->data[$id]['slug'] = 0;
-
-                $this->log[] = array('Товар', $id, 'post_name', 'EMPTY');
+    private function filter_sklad($postmeta): bool {
+        if (isset($postmeta['showroom-is-warehouse'])) {
+            if ($postmeta['showroom-is-warehouse'] == '1') {
+                return false;
             } else {
-                $this->data[$id]['slug'] = $post['post_name'];
+                return true;
             }
         } else {
-            $this->data[$id]['slug'] = 0;
-
-            $this->log[] = array('Товар', $id, 'post_name', 'NOT_EXIST');
+            return true;
         }
     }
 
-    private function set_name($id, $post) {
-        if (isset($post['post_title'])) {
-            if (empty($post['post_title'])) {
-                $this->data[$id]['name'] = 0;
-
-                $this->log[] = array('Товар', $id, 'post_title', 'EMPTY');
-            } else {
-                $this->data[$id]['name'] = $post['post_title'];
-            }
-        } else {
-            $this->data[$id]['name'] = 0;
-
-            $this->log[] = array('Товар', $id, 'post_title', 'NOT_EXIST');
-        }
+    private function get_slug($post): string {
+        return $post['post_name'] ?? "";
     }
 
-    private function set_group($id, $postmeta, $terms, $termmeta) {
+    private function get_name($post): string {
+        return $post['post_title'] ?? "";
+    }
+
+    private function get_group($postmeta, $terms, $termmeta) {
+        $data = [];
+
         if (isset($postmeta['showroom-group'])) {
             if (empty($postmeta['showroom-group'])) {
-                $this->data[$id]['group'] = 0;
-
-                $this->log[] = array('Группа (шоурумы)', $id, 'showroom-group', 'EMPTY');
-            } else {
-                $data = array();
-
-                foreach (unserialize($postmeta['showroom-group']) as $value) {
-                    $terms = $terms[$value];
-                    $termmeta = $termmeta[$value];
-
-                    $data[$value]['id'] = $value;
-
-                    if (isset($terms['name'])) {
-                        if (empty($terms['name'])) {
-                            $data[$value]['name'] = 0;
-
-                            $this->log[] = array('Группа (шоурумы)', $id, 'name', 'EMPTY');
-                        } else {
-                            $data[$value]['name'] = $terms['name'];
-                        }
-                    } else {
-                        $data[$value]['name'] = 0;
-
-                        $this->log[] = array('Группа (шоурумы)', $id, 'name', 'NOT_EXIST');
-                    }
-
-                    if (isset($termmeta['showroom-list-subtitle'])) {
-                        if (empty($termmeta['showroom-list-subtitle'])) {
-                            $data[$value]['subtitle'] = 0;
-
-                            $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-subtitle', 'EMPTY');
-                        } else {
-                            $data[$value]['subtitle'] = $termmeta['showroom-list-subtitle'];
-                        }
-                    } else {
-                        $data[$value]['subtitle'] = 0;
-
-                        $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-subtitle', 'NOT_EXIST');
-                    }
-
-                    if (isset($termmeta['showroom-list-order'])) {
-                        if (empty($termmeta['showroom-list-order'])) {
-                            $data[$value]['order'] = 0;
-
-                            $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-order', 'EMPTY');
-                        } else {
-                            $data[$value]['order'] = $termmeta['showroom-list-order'];
-                        }
-                    } else {
-                        $data[$value]['order'] = 0;
-
-                        $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-order', 'NOT_EXIST');
-                    }
-
-                    if (isset($termmeta['showroom-list-icon'])) {
-                        if (empty($termmeta['showroom-list-icon'])) {
-                            $data[$value]['icon'] = 0;
-
-                            $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-icon', 'EMPTY');
-                        } else {
-                            $data[$value]['icon'] = $termmeta['showroom-list-icon'];
-                        }
-                    } else {
-                        $data[$value]['icon'] = 0;
-
-                        $this->log[] = array('Группа (шоурумы)', $id, 'showroom-list-icon', 'NOT_EXIST');
-                    }
-                }
-
-                $this->data[$id]['group'] = serialize($data);
+                return serialize($data);
             }
-        } else {
-            $this->data[$id]['group'] = 0;
-
-            $this->log[] = array('Группа (шоурумы)', $id, 'showroom-group', 'NOT_EXIST');
         }
+
+        foreach (unserialize($postmeta['showroom-group']) as $value) {
+            $terms = $terms[$value];
+            $termmeta = $termmeta[$value];
+
+            $data[$value]['id'] = $value;
+            $data[$value]['name'] = $terms['name'] ?? 0;
+            $data[$value]['subtitle'] = $termmeta['showroom-list-subtitle'] ?? 0;
+            $data[$value]['order'] = $termmeta['showroom-list-order'] ?? 0;
+            $data[$value]['icon'] = $termmeta['showroom-list-icon'] ?? 0;
+
+        }
+
+        return serialize($data);
     }
 
-    private function set_cover($id, $postmeta, $attachments) {
-        if (isset($postmeta['showroom-cover'])) {
-            if (empty($postmeta['showroom-cover'])) {
-                $this->data[$id]['cover'] = 0;
+    private function get_cover($postmeta, $attachments): string {
+        $data = [];
 
-                $this->log[] = array('Шоурум', $id, 'showroom-cover', 'EMPTY');
-            } else {
-                $this->data[$id]['cover'] = serialize($attachments[$postmeta['showroom-cover']]);
-            }
-        } else {
-            $this->data[$id]['cover'] = 0;
+        if (!isset($postmeta['showroom-cover'])) return serialize($data);
 
-            $this->log[] = array('Шоурум', $id, 'showroom-cover', 'NOT_EXIST');
-        }
+        $data = $attachments[$postmeta['showroom-cover']] ?? "";
+
+        return serialize($data);
     }
 
-    private function set_address($id, $postmeta) {
-        if (isset($postmeta['showroom-address'])) {
-            if (empty($postmeta['showroom-address'])) {
-                $this->data[$id]['address'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-address', 'EMPTY');
-            } else {
-                $this->data[$id]['address'] = $postmeta['showroom-address'];
-            }
-        } else {
-            $this->data[$id]['address'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-address', 'NOT_EXIST');
-        }
+    private function get_address($postmeta): string {
+        return $postmeta['showroom-address'] ?? 0;
     }
 
-    private function set_coordinates($id, $postmeta) {
-        if (isset($postmeta['showroom-coordinates'])) {
-            if (empty($postmeta['showroom-coordinates'])) {
-                $this->data[$id]['coordinates'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-coordinates', 'EMPTY');
-            } else {
-                $this->data[$id]['coordinates'] = $postmeta['showroom-coordinates'];
-            }
-        } else {
-            $this->data[$id]['coordinates'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-coordinates', 'NOT_EXIST');
-        }
+    private function get_coordinates($postmeta): string {
+        return $postmeta['showroom-coordinates'] ?? 0;
     }
 
-    private function set_working_hours($id, $postmeta) {
-        if (isset($postmeta['showroom-working-hours'])) {
-            if (empty($postmeta['showroom-working-hours'])) {
-                $this->data[$id]['working_hours'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-working-hours', 'EMPTY');
-            } else {
-                $this->data[$id]['working_hours'] = $postmeta['showroom-working-hours'];
-            }
-        } else {
-            $this->data[$id]['working_hours'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-working-hours', 'NOT_EXIST');
-        }
+    private function get_working_hours($postmeta): string {
+        return $postmeta['showroom-working-hours'] ?? 0;
     }
 
-    private function set_description($id, $postmeta) {
-        if (isset($postmeta['showroom-description'])) {
-            if (empty($postmeta['showroom-description'])) {
-                $this->data[$id]['description'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-description', 'EMPTY');
-            } else {
-                $this->data[$id]['description'] = $postmeta['showroom-description'];
-            }
-        } else {
-            $this->data[$id]['description'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-description', 'NOT_EXIST');
-        }
+    private function get_desription($postmeta): string {
+        return $postmeta['showroom-description'] ?? 0;
     }
 
-    private function set_city($id, $postmeta, $terms) {
-        $data = array();
+    private function get_city($postmeta, $terms): string {
+        $data = [];
 
-        if (isset($postmeta['showroom-city'])) {
-            if (empty($postmeta['showroom-city'])) {
-                $this->data[$id]['city'] = 0;
+        if (!isset($postmeta['showroom-city'])) return serialize($data);
 
-                $this->log[] = array('Шоурумы', $id, 'showroom-city', 'EMPTY');
-            } else {
-                if (isset($terms[$postmeta['showroom-city']]['name'])) {
-                    if (empty($terms[$postmeta['showroom-city']]['name'])) {
-                        $data['name'] = 0;
+        $data['name'] = $terms[$postmeta['showroom-city']]['name'] ?? "";
+        $data['slug'] = $terms[$postmeta['showroom-city']]['slug'] ?? "";
 
-                        $this->log[] = array('Город (шоурумы)', $id, 'name', 'EMPTY');
-                    } else {
-                        $data['name'] = $terms[$postmeta['showroom-city']]['name'];
-                    }
-                } else {
-                    $this->log[] = array('Город (шоурумы)', $id, 'name', 'NOT_EXIST');
-                }
-
-                if (isset($terms[$postmeta['showroom-city']]['slug'])) {
-                    if (empty($terms[$postmeta['showroom-city']]['slug'])) {
-                        $data['slug'] = 0;
-
-                        $this->log[] = array('Город (шоурумы)', $id, 'slug', 'EMPTY');
-                    } else {
-                        $data['slug'] = $terms[$postmeta['showroom-city']]['slug'];
-                    }
-                } else {
-                    $this->log[] = array('Город (шоурумы)', $id, 'name', 'NOT_EXIST');
-                }
-
-                $this->data[$id]['city'] = serialize($data);
-            }
-        } else {
-            $this->data[$id]['city'] = 0;
-
-            $this->log[] = array('Шоурумы', $id, 'showroom-city', 'NOT_EXIST');
-        }
+        return serialize($data);
     }
 
-    private function set_subway($id, $postmeta) {
-        $data = array();
+    private function get_subway($postmeta): string {
+        $data = [];
 
-        if (isset($postmeta['showroom-subway_showroom-subway-station'])) {
-            if (empty($postmeta['showroom-subway_showroom-subway-station'])) {
-                $data['station'] = 0;
+        $data['station'] = $postmeta['showroom-subway_showroom-subway-station'] ?? 0;
+        $data['color'] = $postmeta['showroom-subway_showroom-subway-color'] ?? 0;
+        $data['distance'] = $postmeta['showroom-subway_showroom-subway-distance'] ?? 0;
 
-                $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-station', 'EMPTY');
-            } else {
-                $data['station'] = $postmeta['showroom-subway_showroom-subway-station'];
-            }
-        } else {
-            $data['station'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-station', 'NOT_EXIST');
-        }
-
-        if (isset($postmeta['showroom-subway_showroom-subway-color'])) {
-            if (empty($postmeta['showroom-subway_showroom-subway-color'])) {
-                $data['color'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-color', 'EMPTY');
-            } else {
-                $data['color'] = $postmeta['showroom-subway_showroom-subway-color'];
-            }
-        } else {
-            $data['color'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-color', 'NOT_EXIST');
-        }
-
-        if (isset($postmeta['showroom-subway_showroom-subway-distance'])) {
-            if (empty($postmeta['showroom-subway_showroom-subway-distance'])) {
-                $data['distance'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-distance', 'EMPTY');
-            } else {
-                $data['distance'] = $postmeta['showroom-subway_showroom-subway-distance'];
-            }
-        } else {
-            $data['distance'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-subway_showroom-subway-distance', 'NOT_EXIST');
-        }
-
-        $this->data[$id]['subway'] = serialize($data);
+        return serialize($data);
     }
 
-    private function set_area($id, $postmeta) {
-        if (isset($postmeta['showroom-subgroup-1_showroom-area'])) {
-            if (empty($postmeta['showroom-subgroup-1_showroom-area'])) {
-                $this->data[$id]['area'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-subgroup-1_showroom-area', 'EMPTY');
-            } else {
-                $this->data[$id]['area'] = $postmeta['showroom-subgroup-1_showroom-area'];
-            }
-        } else {
-            $this->data[$id]['area'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-subgroup-1_showroom-area', 'NOT_EXIST');
-        }
+    private function get_area($postmeta): string {
+        return $postmeta['showroom-subgroup-1_showroom-area'] ?? 0;
     }
 
-    private function set_services($id, $postmeta) {
-        if (isset($postmeta['showroom-subgroup-1_showroom-services'])) {
-            if (empty($postmeta['showroom-subgroup-1_showroom-services'])) {
-                $this->data[$id]['services'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-subgroup-1_showroom-services', 'EMPTY');
-            } else {
-                $this->data[$id]['services'] = $postmeta['showroom-subgroup-1_showroom-services'];
-            }
-        } else {
-            $this->data[$id]['services'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-subgroup-1_showroom-services', 'NOT_EXIST');
-        }
+    private function get_services($postmeta): string {
+        return $postmeta['showroom-subgroup-1_showroom-services'] ?? 0;
     }
 
-    private function set_buttons($id, $postmeta, $attachments) {
-        $data = array();
+    private function get_buttons($postmeta, $attachments): string {
+        $data = [];
 
         $keys = preg_grep('/^showroom-waypoints_/', array_keys($postmeta));
 
-        if (!empty($keys)) {
-            foreach ($keys as $key) {
-                if (strpos($key, 'title') !== false) {
-                    $exploded_key = explode('_', $key);
+        if (!$keys) return serialize($data);
 
-                    $data[$exploded_key[1]]['title'] = $postmeta[$key];
-                }
+        foreach ($keys as $key) {
+            if (strpos($key, 'title') !== false) {
+                $exploded_key = explode('_', $key);
 
-                if (strpos($key, 'image') !== false) {
-                    $exploded_key = explode('_', $key);
-
-                    $data[$exploded_key[1]]['image'] = serialize($attachments[$postmeta[$key]]);
-                }
+                $data[$exploded_key[1]]['title'] = $postmeta[$key];
             }
-        } else {
-            $this->log[] = array('Шоурум', $id, 'showroom-waypoints', 'EMPTY');
+
+            if (strpos($key, 'image') !== false) {
+                $exploded_key = explode('_', $key);
+
+                $data[$exploded_key[1]]['image'] = serialize($attachments[$postmeta[$key]]);
+            }
         }
 
-        if (!empty($data)) {
-            $this->data[$id]['buttons'] = serialize($data);
-        } else {
-            $this->data[$id]['buttons'] = 0;
-        }
+        return serialize($data);
     }
 
-    private function set_order($id, $postmeta) {
-        if (isset($postmeta['showroom-order'])) {
-            if (empty($postmeta['showroom-order'])) {
-                $this->data[$id]['order'] = 0;
-
-                $this->log[] = array('Шоурум', $id, 'showroom-order', 'EMPTY');
-            } else {
-                $this->data[$id]['order'] = $postmeta['showroom-order'];
-            }
-        } else {
-            $this->data[$id]['order'] = 0;
-
-            $this->log[] = array('Шоурум', $id, 'showroom-order', 'NOT_EXIST');
-        }
+    private function get_order($postmeta) {
+        return $postmeta['showroom-order'] ?? 0;
     }
 
-    private function set_hidden($id, $postmeta) {
-        if (isset($postmeta['showroom-hidden'])) {
-            if (empty($postmeta['showroom-hidden'])) {
-                $this->data[$id]['hidden'] = 0;
-            } else {
-                $this->data[$id]['hidden'] = $postmeta['showroom-hidden'];
-            }
-        } else {
-            $this->data[$id]['hidden'] = 0;
-        }
+    private function get_hidden($postmeta): string {
+        return $postmeta['showroom-hidden'] ?? 0;
     }
 
-    private function set_contact_form($id, $postmeta) {
-        if (isset($postmeta['showroom-contact-form'])) {
-            if (empty($postmeta['showroom-contact-form'])) {
-                $this->data[$id]['contact_form'] = 0;
-            } else {
-                $this->data[$id]['contact_form'] = $postmeta['showroom-contact-form'];
-            }
-        } else {
-            $this->data[$id]['contact_form'] = 0;
-        }
+    private function get_contact_form($postmeta): string {
+        return $postmeta['showroom-contact-form'] ?? 0;
     }
 
-    private function set_blocking($id, $postmeta) {
-        $data = array();
+    private function get_blocking($postmeta): string {
+        $data = [];
 
-        if (isset($postmeta['showroom-state_showroom-disabled'])) {
-            if (empty($postmeta['showroom-state_showroom-disabled'])) {
-                $data['disabled'] = 0;
-            } else {
-                $data['disabled'] = $postmeta['showroom-state_showroom-disabled'];
-            }
-        } else {
-            $data['disabled'] = 0;
-        }
+        $data['disabled'] = $postmeta['showroom-state_showroom-disabled'] ?? 0;
+        $data['reason'] = $postmeta['showroom-state_showroom-disabled-reason'] ?? 0;
 
-        if (isset($postmeta['showroom-state_showroom-disabled']) && $postmeta['showroom-state_showroom-disabled'] == '1') {
-            if (isset($postmeta['showroom-state_showroom-disabled-reason'])) {
-                if (empty($postmeta['showroom-state_showroom-disabled-reason'])) {
-                    $data['reason'] = 0;
-                } else {
-                    $data['reason'] = $postmeta['showroom-state_showroom-disabled-reason'];
-                }
-            } else {
-                $data['reason'] = 0;
-            }
-        } else {
-            $data['reason'] = 0;
-        }
-
-        $this->data[$id]['blocking'] = serialize($data);
+        return serialize($data);
     }
 
-    private function get_gallery($postmeta, $attachments) {
+    private function get_gallery($postmeta, $attachments): string {
         $gallery = [];
 
         if (isset($postmeta['showroom-gallery'])) {
             foreach (unserialize($postmeta['showroom-gallery']) as $id_img) {
-                $gallery[] = isset($attachments[$id_img]) ? $attachments[$id_img] : "";
+                $gallery[] = $attachments[$id_img] ?? "";
             }
         }
         $data = [];
@@ -507,7 +234,79 @@ class sk_showrooms extends bootstrap {
         return serialize($data);
     }
 
-    private function set_gallery($id, $postmeta, $attachments) {
+    private function set_id($id) {
+        $this->data[$id]['id'] = (int) $id;
+    }
+
+    private function set_slug($id, $post): void {
+        $this->data[$id]['slug'] = $this->get_slug($post);
+    }
+
+    private function set_name($id, $post): void {
+        $this->data[$id]['name'] = $this->get_name($post);
+    }
+
+    private function set_group($id, $postmeta, $terms, $termmeta): void {
+        $this->data[$id]['group'] = $this->get_group($postmeta, $terms, $termmeta);
+    }
+
+    private function set_cover($id, $postmeta, $attachments): void {
+        $this->data[$id]['cover'] = $this->get_cover($postmeta, $attachments);
+    }
+
+    private function set_address($id, $postmeta): void {
+        $this->data[$id]['address'] = $this->get_address($postmeta);
+    }
+
+    private function set_coordinates($id, $postmeta): void {
+        $this->data[$id]['coordinates'] = $this->get_coordinates($postmeta);
+    }
+
+    private function set_working_hours($id, $postmeta): void {
+        $this->data[$id]['working_hours'] = $this->get_working_hours($postmeta);
+    }
+
+    private function set_description($id, $postmeta): void {
+        $this->data[$id]['description'] = $this->get_desription($postmeta);
+    }
+
+    private function set_city($id, $postmeta, $terms): void {
+        $this->data[$id]['city'] = $this->get_city($postmeta, $terms);
+    }
+
+    private function set_subway($id, $postmeta): void {
+        $this->data[$id]['subway'] = $this->get_subway($postmeta);
+    }
+
+    private function set_area($id, $postmeta): void {
+        $this->data[$id]['area'] = $this->get_area($postmeta);
+    }
+
+    private function set_services($id, $postmeta): void {
+        $this->data[$id]['services'] = $this->get_services($postmeta);
+    }
+
+    private function set_buttons($id, $postmeta, $attachments): void {
+        $this->data[$id]['buttons'] = $this->get_buttons($postmeta, $attachments);
+    }
+
+    private function set_order($id, $postmeta): void {
+        $this->data[$id]['order'] = $this->get_order($postmeta);
+    }
+
+    private function set_hidden($id, $postmeta): void {
+        $this->data[$id]['hidden'] = $this->get_hidden($postmeta);
+    }
+
+    private function set_contact_form($id, $postmeta): void {
+        $this->data[$id]['contact_form'] = $this->get_contact_form($postmeta);
+    }
+
+    private function set_blocking($id, $postmeta): void {
+        $this->data[$id]['blocking'] = $this->get_blocking($postmeta);
+    }
+
+    private function set_gallery($id, $postmeta, $attachments): void {
         $this->data[$id]['gallery'] = $this->get_gallery($postmeta, $attachments);
     }
 
