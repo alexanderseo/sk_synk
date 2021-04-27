@@ -64,9 +64,11 @@ class sk_stock_products extends bootstrap {
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
                 $relashionships_array = $this->set_relashions_array_by_id($id, $this->relationships);
+
                 $id_prototype = $this->get_prototype($postmeta);
-                $postmeta_prototype = $this->set_postmeta_array_by_id($id_prototype, $this->postmeta);
-                $relashionships_array_prototype = $this->set_relashions_array_by_id($id_prototype, $this->relationships);
+
+                $postmeta_prototype = !empty($id_prototype) ? $this->set_postmeta_array_by_id($id_prototype, $this->postmeta) : $postmeta;
+                $relashionships_array_prototype = !empty($id_prototype) ? $this->set_relashions_array_by_id($id_prototype, $this->relationships) : $relashionships_array;
 
                 $this->set_id('id', $id);
                 $this->set_slug('slug', $id, $posts);
