@@ -88,8 +88,14 @@ class synchronization {
                         }
 
                         $imploded_values = implode(', ', $values);
+                        try {
+                            $this->database->development->query("UPDATE {$key} SET $imploded_values WHERE id = {$_key}");
+                        } catch (\PDOException $e) {
+                            var_dump('table_name --------', $key);
+                            var_dump('values intro ------', $_key);
+                            var_dump('string of values -----------', $imploded_values);
+                        }
 
-                        $this->database->development->query("UPDATE {$key} SET $imploded_values WHERE id = {$_key}");
                     }
                 } else {
                     $columns = array();
@@ -115,12 +121,13 @@ class synchronization {
 
 
                     try {
-                    $this->database->development->query("INSERT INTO {$key} ($imploded_columns) VALUES ($imploded_values)");
+                        $this->database->development->query("INSERT INTO {$key} ($imploded_columns) VALUES ($imploded_values)");
                     } catch (\PDOException $e) {
-                        var_dump('+++', $values);
-                        var_dump('====', $imploded_columns);
-                        var_dump('////', $imploded_values);
-                        var_dump('---', $e);
+                        var_dump('KEY', $__key);
+                        var_dump('ANY', $__value);
+                        var_dump('TABLE NAME', $key);
+                        var_dump('COLUMN NAMES', $imploded_columns);
+                        var_dump('VALUES', $imploded_values);
                     }
                 }
             }

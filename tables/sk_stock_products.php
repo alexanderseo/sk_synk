@@ -4,6 +4,7 @@ require_once 'helpers/static_attributes.php';
 require_once 'helpers/variable_attributes.php';
 require_once 'helpers/general_helpers.php';
 require_once 'helpers/variations_helpers.php';
+require_once 'helpers/FilterTypeProduct.php';
 
 class sk_stock_products extends bootstrap {
     private static $instance;
@@ -27,6 +28,7 @@ class sk_stock_products extends bootstrap {
     private $terms_by_slug;
     private $attachments;
     private $posts_by_post_name;
+    private $filterHelper;
 
     public function __construct() {
         parent::__construct();
@@ -45,6 +47,7 @@ class sk_stock_products extends bootstrap {
         $this->terms_by_slug = $wordpress['terms_by_slug'];
         $this->termmeta = $wordpress['termmeta'];
         $this->attachments = $wordpress['attachments'];
+        $this->filterHelper = new FilterTypeProduct($this->relationships, $this->term_taxonomy, $this->terms);
         $this->stock_products = [];
 
     }
@@ -60,31 +63,50 @@ class sk_stock_products extends bootstrap {
     public function get($fabrics, $materials) {
 
         foreach ($this->ids_products as $id) {
+//            var_dump('00000000000000', $id);
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
+                $id =193155;
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
                 $relashionships_array = $this->set_relashions_array_by_id($id, $this->relationships);
 
                 $id_prototype = $this->get_prototype($postmeta);
 
-                $postmeta_prototype = !empty($id_prototype) ? $this->set_postmeta_array_by_id($id_prototype, $this->postmeta) : $postmeta;
-                $relashionships_array_prototype = !empty($id_prototype) ? $this->set_relashions_array_by_id($id_prototype, $this->relationships) : $relashionships_array;
+                if ($id_prototype) {
+                    if ($this->filterHelper->filter_simple_product($id_prototype)) {
+                        $postmeta_prototype = $this->set_postmeta_array_by_id($id_prototype, $this->postmeta);
+                        $relashionships_array_prototype = $this->set_relashions_array_by_id($id_prototype, $this->relationships);
+                    } else {
+//                        var_dump('++++++++++++', $id);
+//                        var_dump('--------------', $id_prototype);
+                        $postmeta_prototype = 'simple_filter';
+                    }
+                } else {
+                    $postmeta_prototype = "";
+                    $relashionships_array_prototype = "";
+                }
 
-                $this->set_id('id', $id);
-                $this->set_slug('slug', $id, $posts);
-                $this->set_name('name', $id, $posts);
-                $this->set_category('category_id', $id, $this->relationships, $this->terms, $this->term_taxonomy);
-                $this->set_category_id('category_id', $id, $this->relationships, $this->term_taxonomy);
-                $this->set_product_attributes('product_attributes', $id, $postmeta);
-                $this->set_subtitle('subtitle', $id, $postmeta);
-                $this->set_collection_id('collection_id', $id, $postmeta);
-                $this->set_default_variation_id('default_variation_id', $id, $postmeta);
-                $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
-                $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
-                $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
-                $this->set_stock($id, $postmeta);
-                $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
-                $this->set_prototype($id, $postmeta);
+//                $postmeta_prototype = !empty($id_prototype) ? $this->set_postmeta_array_by_id($id_prototype, $this->postmeta) : $postmeta;
+//                $relashionships_array_prototype = !empty($id_prototype) ? $this->set_relashions_array_by_id($id_prototype, $this->relationships) : $relashionships_array;
+                if ($this->check_simple_filter($postmeta_prototype)) {
+                    $this->set_id('id', $id);
+                    $this->set_slug('slug', $id, $posts);
+                    $this->set_name('name', $id, $posts);
+                    $this->set_category('category_id', $id, $this->relationships, $this->terms, $this->term_taxonomy);
+                    $this->set_category_id('category_id', $id, $this->relationships, $this->term_taxonomy);
+                    $this->set_product_attributes('product_attributes', $id, $postmeta);
+                    $this->set_subtitle('subtitle', $id, $postmeta);
+                    $this->set_collection_id('collection_id', $id, $postmeta);
+                    $this->set_default_variation_id('default_variation_id', $id, $postmeta);
+                    $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
+                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
+                    $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
+                    $this->set_stock($id, $postmeta);
+                    $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
+                    $this->set_prototype($id, $postmeta);
+                }
+
+
             }
         }
 
@@ -116,6 +138,10 @@ class sk_stock_products extends bootstrap {
         }
 
         return $status;
+    }
+
+    private function check_simple_filter($postmeta) {
+        if ($postmeta != 'simple_filter') return true;
     }
 
     private function get_id($id) {
@@ -281,7 +307,7 @@ class sk_stock_products extends bootstrap {
     private function get_location($id_location) {
         global $wordpress;
         $location = [];
-
+//        var_dump('--------------', $id_location);
         $location['id'] = $wordpress['posts'][$id_location]['ID'];
         $location['name'] = $wordpress['posts'][$id_location]['post_title'];
         $location['slug'] = $wordpress['posts'][$id_location]['post_name'];

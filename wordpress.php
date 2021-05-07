@@ -26,7 +26,7 @@ class wordpress {
         $this->db = database::get_instance();
 
         $this->postmeta = $this->db->admin->query("SELECT * FROM wp_postmeta")->fetchAll(PDO::FETCH_ASSOC);
-        $this->posts = $this->db->admin->query("SELECT ID, post_content, post_title, post_status, post_parent, guid, post_name, post_modified, post_parent, post_type, menu_order FROM wp_posts WHERE post_status = 'publish' OR post_status = 'inherit' OR post_status = 'future'")->fetchAll(PDO::FETCH_ASSOC);
+        $this->posts = $this->db->admin->query("SELECT ID, post_content, post_title, post_status, post_parent, guid, post_name, post_date, post_modified, post_parent, post_type, menu_order FROM wp_posts WHERE post_status = 'publish' OR post_status = 'inherit' OR post_status = 'future'")->fetchAll(PDO::FETCH_ASSOC);
 //        $this->posts_attachments = $this->db->admin->query("SELECT ID, post_title, post_parent, guid FROM wp_posts WHERE post_type = 'attachment'")->fetchAll(PDO::FETCH_ASSOC);
         $this->term_relationships = $this->db->admin->query("SELECT * FROM wp_term_relationships")->fetchAll(PDO::FETCH_ASSOC);
         $this->term_taxonomy = $this->db->admin->query("SELECT * FROM wp_term_taxonomy")->fetchAll(PDO::FETCH_ASSOC);

@@ -1,5 +1,6 @@
 <?php
 
+require_once 'helpers/FilterTypeProduct.php';
 require_once 'helpers/default_attributes.php';
 require_once 'helpers/static_attributes.php';
 require_once 'helpers/variable_attributes.php';
@@ -29,6 +30,7 @@ class sk_expo_products extends bootstrap {
     private $terms_by_slug;
     private $attachments;
     private $posts_by_post_name;
+    private $filterHelper;
 
     public function __construct() {
         parent::__construct();
@@ -47,6 +49,7 @@ class sk_expo_products extends bootstrap {
         $this->terms_by_slug = $wordpress['terms_by_slug'];
         $this->termmeta = $wordpress['termmeta'];
         $this->attachments = $wordpress['attachments'];
+        $this->filterHelper = new FilterTypeProduct($this->relationships, $this->term_taxonomy, $this->terms);
         $this->expo_products = [];
 
     }
@@ -63,7 +66,7 @@ class sk_expo_products extends bootstrap {
 
 
         foreach ($this->ids_products as $id) {
-//            $id = 190894;
+//            $id = 192617;
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
@@ -71,39 +74,47 @@ class sk_expo_products extends bootstrap {
                 $id_prototype = $this->get_prototype($postmeta);
 
                 if ($id_prototype) {
-                    $postmeta_prototype = $this->set_postmeta_array_by_id($id_prototype, $this->postmeta);
-                    $relashionships_array_prototype = $this->set_relashions_array_by_id($id_prototype, $this->relationships);
+                    if ($this->filterHelper->filter_simple_product($id_prototype)) {
+                        $postmeta_prototype = $this->set_postmeta_array_by_id($id_prototype, $this->postmeta);
+                        $relashionships_array_prototype = $this->set_relashions_array_by_id($id_prototype, $this->relationships);
+                    } else {
+                        $postmeta_prototype = 'simple_filter';
+                    }
                 } else {
                     $postmeta_prototype = "";
                     $relashionships_array_prototype = "";
                 }
 
-                $this->set_id('id', $id);
-                $this->set_slug('slug', $id, $posts);
-                $this->set_name('name', $id, $posts);
-                $this->set_category('category_id', $id, $this->relationships, $this->terms, $this->term_taxonomy);
-                $this->set_parent_category('parent_category', $id, $this->relationships, $this->terms, $this->term_taxonomy);
-                $this->set_category_id('category_id', $id, $this->relationships, $this->term_taxonomy);
-                $this->set_product_attributes('product_attributes', $id, $postmeta);
-                $this->set_subtitle('subtitle', $id, $postmeta);
-                $this->set_collection_id('collection_id', $id, $postmeta);
-                $this->set_default_variation_id('default_variation_id', $id, $postmeta);
-                $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
-                $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
-                $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
-                $this->set_expo_data($id, $postmeta);
-                $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
-                $this->set_prototype($id, $postmeta);
+                if ($this->check_simple_filter($postmeta_prototype)) {
+                    $this->set_id('id', $id);
+                    $this->set_slug('slug', $id, $posts);
+                    $this->set_name('name', $id, $posts);
+                    $this->set_category('category_id', $id, $this->relationships, $this->terms, $this->term_taxonomy);
+                    $this->set_parent_category('parent_category', $id, $this->relationships, $this->terms, $this->term_taxonomy);
+                    $this->set_category_id('category_id', $id, $this->relationships, $this->term_taxonomy);
+                    $this->set_product_attributes('product_attributes', $id, $postmeta);
+                    $this->set_subtitle('subtitle', $id, $postmeta);
+                    $this->set_collection_id('collection_id', $id, $postmeta);
+                    $this->set_default_variation_id('default_variation_id', $id, $postmeta);
+                    $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
+                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
+                    $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
+                    $this->set_expo_data($id, $postmeta);
+                    $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
+                    $this->set_prototype($id, $postmeta);
+                }
             }
-
-
         }
 
-//        var_dump('================', $k);
-
+//       var_dump('================', $this->expo_products);
 
         return $this->expo_products;
     }
+
+    private function check_simple_filter($postmeta) {
+        if ($postmeta != 'simple_filter') return true;
+    }
+
 
     /**
      * @param $id
@@ -463,7 +474,7 @@ class sk_expo_products extends bootstrap {
                 $this->expo_products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
             }
         } else {
-            $this->expo_products[$id]['static_attributes'] = "";
+            $this->expo_products[$id]['static_attributes'] = serialize([]);
         }
     }
 
@@ -492,36 +503,11 @@ class sk_expo_products extends bootstrap {
         return $ids;
     }
 
-    /**
-     * @param $id
-     * Определяем, где находится товар
-     * Если в outlet, то собираем одно тело get_outlet
-     * Если в stock, то собираем другое тело get_stock
-     */
     private function set_expo_data($id, $postmeta) {
-        if ($this->check_outlet($postmeta)) {
-            $this->expo_products[$id]['stock'] = $this->get_stock($postmeta);
-        } else {
-            $data_expo = $this->get_outlet($postmeta);
-            $this->expo_products[$id]['expo'] = $data_expo;
-            $this->expo_products[$id]['ids_showrooms'] = $this->get_ids_showrooms($data_expo);
-        }
-    }
+        $data_expo = $this->get_outlet($postmeta);
+        $this->expo_products[$id]['expo'] = $data_expo;
+        $this->expo_products[$id]['ids_showrooms'] = $this->get_ids_showrooms($data_expo);
 
-    /**
-     * @param $id
-     * @return bool
-     * Проверяем на is-outlet
-     */
-    private function check_outlet($postmeta) {
-
-        if (isset($postmeta['is-outlet'])) {
-            $response = $postmeta['is-outlet'] == "0";
-        } else {
-            $response = false;
-        }
-
-        return $response;
     }
 
     private function set_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms) {
@@ -531,9 +517,7 @@ class sk_expo_products extends bootstrap {
     private function get_prototype($postmeta) {
         $prototype_id = unserialize($postmeta['prototype']);
 
-        if (empty($prototype_id)) {
-            return "";
-        }
+        if (empty($prototype_id)) return "";
 
         return $prototype_id[0];
     }

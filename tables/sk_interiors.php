@@ -57,6 +57,7 @@ class sk_interiors extends bootstrap {
             $this->set_thumbnail('thumbnail', $id, $this_postmeta, $this->attachments);
             $this->set_interior('interior', $id, $this_postmeta, $this->mapplic);
             $this->set_location('location', $id, $this_postmeta, $this->terms);
+            $this->set_pub_unix_time('pub_unix_time', $id, $post_interiors);
         }
 
 //        var_dump('-----------', $this->interiors_data);
@@ -196,6 +197,10 @@ class sk_interiors extends bootstrap {
         return serialize($location);
     }
 
+    private function get_pub_unix_time($interiors): string {
+        return isset($interiors['post_date']) ? strtotime($interiors['post_date']) : "";
+    }
+
     private function set_id($key, $id) {
         $this->interiors_data[$id][$key] = $this->get_id($id);
     }
@@ -258,6 +263,10 @@ class sk_interiors extends bootstrap {
             function($slug) use ($id) {
                 $this->interiors_data[$id]['location_slug'] = $slug;
             });
+    }
+
+    private function set_pub_unix_time($key, $id, $post_interiors): void {
+        $this->interiors_data[$id][$key] = $this->get_pub_unix_time($post_interiors);
     }
 
 }

@@ -34,6 +34,7 @@ class sk_portfolio extends bootstrap {
     public function get() {
 
         foreach ($this->ids_portfolio as $id) {
+//            var_dump('------------', $id);
 //            $id = 191755;
             $post_portfolio = $this->portfolio[$id];
             $this_postmeta = $this->postmeta[$id];
@@ -48,8 +49,11 @@ class sk_portfolio extends bootstrap {
             $this->set_content_block('content_block', $id, $this_postmeta, $this->attachments);
             $this->set_detail_block('detail_block', $id, $this_postmeta);
             $this->set_exploited_products('exploited_products', $id, $this_postmeta);
+            $this->set_pub_unix_time('pub_unix_time', $id, $post_portfolio);
 
         }
+
+//        var_dump($this->portfolio_data);
 
         return $this->portfolio_data;
     }
@@ -182,11 +186,17 @@ class sk_portfolio extends bootstrap {
 
         $count = $postmeta[$key] ?? 0;
 
+        if (empty($count)) return 0;
+
         return $count;
     }
 
     private function get_exploited_products($postmeta): string {
         return $postmeta['exploited-products'] ?? "";
+    }
+
+    private function get_pub_unix_time($portfolio): string {
+        return isset($portfolio['post_date']) ? strtotime($portfolio['post_date']) : "";
     }
 
     private function set_id($key, $id): void {
@@ -227,5 +237,9 @@ class sk_portfolio extends bootstrap {
 
     private function set_exploited_products($key, $id, $this_postmeta): void {
         $this->portfolio_data[$id][$key] = $this->get_exploited_products($this_postmeta);
+    }
+
+    private function set_pub_unix_time($key, $id, $post_portfolio): void {
+        $this->portfolio_data[$id][$key] = $this->get_pub_unix_time($post_portfolio);
     }
 }
