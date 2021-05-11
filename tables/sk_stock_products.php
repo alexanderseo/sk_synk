@@ -63,9 +63,7 @@ class sk_stock_products extends bootstrap {
     public function get($fabrics, $materials) {
 
         foreach ($this->ids_products as $id) {
-//            var_dump('00000000000000', $id);
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
-                $id =193155;
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
                 $relashionships_array = $this->set_relashions_array_by_id($id, $this->relationships);
@@ -77,8 +75,6 @@ class sk_stock_products extends bootstrap {
                         $postmeta_prototype = $this->set_postmeta_array_by_id($id_prototype, $this->postmeta);
                         $relashionships_array_prototype = $this->set_relashions_array_by_id($id_prototype, $this->relationships);
                     } else {
-//                        var_dump('++++++++++++', $id);
-//                        var_dump('--------------', $id_prototype);
                         $postmeta_prototype = 'simple_filter';
                     }
                 } else {
@@ -86,8 +82,6 @@ class sk_stock_products extends bootstrap {
                     $relashionships_array_prototype = "";
                 }
 
-//                $postmeta_prototype = !empty($id_prototype) ? $this->set_postmeta_array_by_id($id_prototype, $this->postmeta) : $postmeta;
-//                $relashionships_array_prototype = !empty($id_prototype) ? $this->set_relashions_array_by_id($id_prototype, $this->relationships) : $relashionships_array;
                 if ($this->check_simple_filter($postmeta_prototype)) {
                     $this->set_id('id', $id);
                     $this->set_slug('slug', $id, $posts);
@@ -110,9 +104,13 @@ class sk_stock_products extends bootstrap {
             }
         }
 
-//        var_dump($this->stock_products);
+        $clear_array = array_filter($this->stock_products,
+            fn ($key) => !empty($key),
+            ARRAY_FILTER_USE_KEY);
 
-        return $this->stock_products;
+//        var_dump($clear_array);
+
+        return $clear_array;
     }
 
     /**
@@ -185,7 +183,6 @@ class sk_stock_products extends bootstrap {
         }
 
         $category = [];
-//        var_dump('----------', $terms);
         $category['name'] = $terms[$category_id]['name'];
         $category['slug'] = $terms[$category_id]['slug'];
 
