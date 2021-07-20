@@ -26,7 +26,7 @@ class GetIdsForChangePrice {
                       WHERE ID IN (
                           SELECT object_id
                           FROM wp_term_relationships
-                          WHERE term_taxonomy_id = 6918)
+                          WHERE term_taxonomy_id = 6263)
                         AND post_type = 'product'
                         AND post_status = 'publish')
                     AND post_type = 'product_variation')

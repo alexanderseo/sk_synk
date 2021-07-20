@@ -47,7 +47,7 @@ class sk_cart_upsell extends bootstrap {
 
         if (!empty($options)) {
             if (isset($options['option_value'])) {
-                    $ids = implode(',', unserialize($options['option_value']));
+                $ids = implode(',', unserialize($options['option_value']));
             }
         }
 

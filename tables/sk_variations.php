@@ -55,11 +55,9 @@ class sk_variations extends bootstrap {
 
         if (isset($this->all_posts_ids['variations'])) {
             foreach ($this->all_posts_ids['variations'] as $id) {
-//                $id = 164544;
-//                $id = 157604;
 
                 $posts_array = $this->set_products_array_by_id($id, $this->all_posts);
-                $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
+//                $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
                 $postmeta_array = $this->set_postmeta_array_by_id($id, $this->postmeta);
 
                 if ($this->check_visible_variation($postmeta_array)) {
@@ -84,8 +82,6 @@ class sk_variations extends bootstrap {
                 }
             }
         }
-
-//        var_dump('-----------', $this->variations);
 
         return $this->variations;
     }

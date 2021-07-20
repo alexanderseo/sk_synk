@@ -282,7 +282,7 @@ class GroupOptionsBases {
                     }
 
                     if (strpos($key_str, 'options_bases_' . $index . '_base_entity_base_collection') === 0) {
-                            $data[$index][] = $value;
+                        $data[$index][] = $value;
                     }
 
                 }

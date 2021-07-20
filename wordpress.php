@@ -66,7 +66,6 @@ class wordpress {
         );
 
         foreach ($this->posts as $value) {
-
             $array = array();
 
             if ($value['post_type'] == 'attachment') {
@@ -79,7 +78,6 @@ class wordpress {
                     foreach ($suffixes as $suffix) {
                         if ($count > 1) {
                             $_ = $url;
-
                             $_[$count - 2] = $_[$count - 2] . $suffix;
 
                             switch ($suffix) {
@@ -314,6 +312,19 @@ class wordpress {
         return $data;
     }
 
+    private function get_posts_customer_photos() {
+        $data = [];
+
+        foreach ($this->posts as $value) {
+            if ($value['post_type'] == 'customer-photos') {
+                $data[$value['ID']] = $value;
+            }
+
+        }
+
+        return $data;
+    }
+
     private function get_posts_by_post_name() {
         $data = array();
 
@@ -517,5 +528,6 @@ class wordpress {
         $wordpress['options_tabs'] = $this->get_options_tabs();
         $wordpress['mapplic'] = $this->get_posts_mapplic();
         $wordpress['page'] = $this->get_posts_page();
+        $wordpress['customer_photos'] = $this->get_posts_customer_photos();
     }
 }

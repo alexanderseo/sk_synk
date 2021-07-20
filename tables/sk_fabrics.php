@@ -47,9 +47,9 @@ class sk_fabrics extends bootstrap {
             $postmeta = $this->postmeta[$id];
 
             $this->set_id($id);
-            $this->set_key_posts('post_title', $id, $posts, 'name', 'Товар');
-            $this->set_key_posts('post_name', $id, $posts, 'slug', 'Товар');
-            $this->set_key_posts('hide', $id, $postmeta, 'hide', 'Товар');
+            $this->set_key_posts('post_title', $id, $posts, 'name');
+            $this->set_key_posts('post_name', $id, $posts, 'slug');
+            $this->set_key_posts('hide', $id, $postmeta, 'hide');
             $this->set_collection('collection', $id, $postmeta, $this->terms, $this->termmeta, $this->attachments, 'collection', 'Ткань');
             $this->set_color('color', $id, $postmeta, $this->terms, $this->termmeta, 'color', 'Ткань');
             $this->set_image('image', $id, $postmeta, $this->attachments, 'image', 'Ткань');
@@ -62,8 +62,6 @@ class sk_fabrics extends bootstrap {
         }
 
         $this->set_log($this->log);
-
-//        var_dump('fabric--------', $this->data);
 
         return $this->data;
     }
@@ -148,13 +146,15 @@ class sk_fabrics extends bootstrap {
     private function get_gallery($attachments, $postmeta, $search_key) {
         $data = [];
 
-        foreach (unserialize($postmeta[$search_key]) as $value) {
-            $data[] = serialize([
-                'original' => $attachments[$value]['original'],
-                'w500' => $attachments[$value]['w500'],
-                'w300' => $attachments[$value]['w300'],
-                'w100' => $attachments[$value]['w100'],
-            ]);
+        if ($postmeta[$search_key] !== '0') {
+            foreach (unserialize($postmeta[$search_key]) as $value) {
+                $data[] = [
+                    'original' => $attachments[$value]['original'],
+                    'w500' => $attachments[$value]['w500'],
+                    'w300' => $attachments[$value]['w300'],
+                    'w100' => $attachments[$value]['w100'],
+                ];
+            }
         }
 
         return serialize($data);
@@ -179,10 +179,14 @@ class sk_fabrics extends bootstrap {
      * $setting_key - имя, которое улетает в таблицу fabrics
      * $type_product имя для логирования
      */
-    private function set_key_posts($search_key, $id, $post, $setting_key, $type_product) {
-        if ($this->has_key($search_key, $id, $post, $setting_key, $type_product)) {
-            $this->data[$id][$setting_key] = $this->get_key_posts($post, $search_key);
-        }
+//    private function set_key_posts($search_key, $id, $post, $setting_key, $type_product) {
+//        if ($this->has_key($search_key, $id, $post, $setting_key, $type_product)) {
+//            $this->data[$id][$setting_key] = $this->get_key_posts($post, $search_key);
+//        }
+//    }
+
+    private function set_key_posts($search_key, $id, $post, $setting_key) {
+        $this->data[$id][$setting_key] = $this->get_key_posts($post, $search_key);
     }
 
     /**

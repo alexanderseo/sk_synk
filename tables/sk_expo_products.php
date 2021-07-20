@@ -66,7 +66,7 @@ class sk_expo_products extends bootstrap {
 
 
         foreach ($this->ids_products as $id) {
-//            $id = 192617;
+//            $id = 196629;
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
@@ -97,7 +97,7 @@ class sk_expo_products extends bootstrap {
                     $this->set_collection_id('collection_id', $id, $postmeta);
                     $this->set_default_variation_id('default_variation_id', $id, $postmeta);
                     $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
-                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
+                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->termmeta);
                     $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
                     $this->set_expo_data($id, $postmeta);
                     $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
@@ -106,9 +106,16 @@ class sk_expo_products extends bootstrap {
             }
         }
 
-//       var_dump('================', $this->expo_products);
+        /**
+         * PHP 7.2
+         */
+        $clear_array = array_filter($this->expo_products, function($v, $k) {
+            return array_key_exists('entities', unserialize($v['expo']));
+        }, ARRAY_FILTER_USE_BOTH );
 
-        return $this->expo_products;
+//       var_dump('================', $clear_array);
+
+        return $clear_array;
     }
 
     private function check_simple_filter($postmeta) {
@@ -466,12 +473,12 @@ class sk_expo_products extends bootstrap {
         }
     }
 
-    private function set_static_attributes($id, $id_prototype, $postmeta, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies) {
+    private function set_static_attributes($id, $id_prototype, $postmeta, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta) {
         if ($id_prototype) {
             if ($this->has_meta($id_prototype, '_product_attributes', ['static_attributes', 'variable_attributes'], $postmeta)) {
                 $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-                $this->expo_products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
+                $this->expo_products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta);
             }
         } else {
             $this->expo_products[$id]['static_attributes'] = serialize([]);

@@ -64,11 +64,13 @@ class sk_stock_products extends bootstrap {
 
         foreach ($this->ids_products as $id) {
             if ($this->check_stock_category($id, $this->relationships, $this->term_taxonomy)) {
+//                $id = 193883;
                 $posts = $this->posts[$id];
                 $postmeta = $this->set_postmeta_array_by_id($id, $this->postmeta);
                 $relashionships_array = $this->set_relashions_array_by_id($id, $this->relationships);
 
                 $id_prototype = $this->get_prototype($postmeta);
+
 
                 if ($id_prototype) {
                     if ($this->filterHelper->filter_simple_product($id_prototype)) {
@@ -93,10 +95,10 @@ class sk_stock_products extends bootstrap {
                     $this->set_collection_id('collection_id', $id, $postmeta);
                     $this->set_default_variation_id('default_variation_id', $id, $postmeta);
                     $this->set_default_attributes('default_attributes', $id, $postmeta, $this->woocommerce_attribute, $this->terms_by_slug);
-                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute);
+                    $this->set_static_attributes($id, $id_prototype, $postmeta_prototype, $relashionships_array_prototype, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->termmeta);
                     $this->set_attributes($id, $postmeta, $fabrics, $relashionships_array, $this->term_taxonomy, $this->terms, $this->woocommerce_attribute, $this->postmeta, $this->termmeta, $materials);
                     $this->set_stock($id, $postmeta);
-                    $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms);
+                    $this->set_variations($id, $fabrics, $this->posts, $this->postmeta, $this->attachments, $this->posts_by_post_name,$this->terms_by_slug, $this->woocommerce_attribute, $this->terms, $postmeta_prototype);
                     $this->set_prototype($id, $postmeta);
                 }
 
@@ -104,9 +106,19 @@ class sk_stock_products extends bootstrap {
             }
         }
 
-        $clear_array = array_filter($this->stock_products,
-            fn ($key) => !empty($key),
-            ARRAY_FILTER_USE_KEY);
+        /**
+         * PHP 7.2
+         */
+        $clear_array = array_filter($this->stock_products, function($k) {
+            return !empty($k);
+        }, ARRAY_FILTER_USE_KEY);
+
+        /**
+         * PHP 7.4
+         */
+//        $clear_array = array_filter($this->stock_products,
+//            fn ($key) => !empty($key),
+//            ARRAY_FILTER_USE_KEY);
 
 //        var_dump($clear_array);
 
@@ -304,7 +316,6 @@ class sk_stock_products extends bootstrap {
     private function get_location($id_location) {
         global $wordpress;
         $location = [];
-//        var_dump('--------------', $id_location);
         $location['id'] = $wordpress['posts'][$id_location]['ID'];
         $location['name'] = $wordpress['posts'][$id_location]['post_title'];
         $location['slug'] = $wordpress['posts'][$id_location]['post_name'];
@@ -355,7 +366,7 @@ class sk_stock_products extends bootstrap {
         return $data;
     }
 
-    private function get_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms) {
+    private function get_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms, $postmeta_prototype) {
         $variations = [];
 
         foreach ($posts as $post) {
@@ -368,8 +379,8 @@ class sk_stock_products extends bootstrap {
                 $variations[$post['ID']]['product_discount'] = $this->get_discount($postmeta_variation);
                 $variations[$post['ID']]['sku'] = $this->get_sku($postmeta_variation);
                 $variations[$post['ID']]['general_image'] = $this->get_thumbnail($postmeta_variation, $attachments);
-                $variations[$post['ID']]['gallery'] = $this->get_gallery($postmeta_variation, $attachments);
-                $variations[$post['ID']]['drawing'] = $this->get_drawing($postmeta_variation, $attachments);
+                $variations[$post['ID']]['gallery'] = $this->get_gallery($postmeta_prototype, $attachments);
+                $variations[$post['ID']]['drawing'] = $this->get_drawing($postmeta_prototype, $attachments);
                 $variations[$post['ID']]['variation_attributes'] = $this->get_attributes_variations($fabrics, $postmeta_variation, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms, $all_postmeta);
             }
         }
@@ -427,11 +438,11 @@ class sk_stock_products extends bootstrap {
         }
     }
 
-    private function set_static_attributes($id, $id_prototype, $postmeta, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies) {
+    private function set_static_attributes($id, $id_prototype, $postmeta, $relashionships_array, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta) {
         if ($this->has_meta($id_prototype, '_product_attributes', ['static_attributes', 'variable_attributes'], $postmeta)) {
             $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-            $this->stock_products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
+            $this->stock_products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta);
         }
     }
 
@@ -482,8 +493,8 @@ class sk_stock_products extends bootstrap {
         return $response;
     }
 
-    private function set_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms) {
-        $this->stock_products[$id]['variations'] = $this->get_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms);
+    private function set_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms, $postmeta_prototype) {
+        $this->stock_products[$id]['variations'] = $this->get_variations($id, $fabrics, $posts, $all_postmeta, $attachments, $posts_by_post_name,$terms_by_slug, $woocommerce_attribute, $terms, $postmeta_prototype);
     }
 
     private function get_prototype($postmeta) {

@@ -3,7 +3,6 @@
 class sk_options extends bootstrap {
     private static $instance;
 
-    private $log;
     private $options;
     private $attachments;
     private $data;
@@ -13,7 +12,6 @@ class sk_options extends bootstrap {
 
         global $wordpress;
 
-        $this->log = [];
         $this->options = $wordpress['options'];
         $this->attachments = $wordpress['attachments'];
         $this->data = [];
@@ -27,7 +25,7 @@ class sk_options extends bootstrap {
         return self::$instance;
     }
 
-    public function get() {
+    public function get(): array {
 
         $this->set_instagram_posts_list($this->options);
         $this->set_kits($this->options);
@@ -36,22 +34,25 @@ class sk_options extends bootstrap {
         return $this->data;
     }
 
-    private function set_instagram_posts_list($options) {
+    private function set_instagram_posts_list(array $options): void {
         $data = [];
 
         if (isset($options['instagram-post-list'])) {
             $this->data[1]['id'] = 1;
             $this->data[1]['slug'] = 'instagram_posts_list';
 
-            foreach ($options['instagram-post-list'] as $option) {
-                $data[] = $option['instagram-post'];
+            foreach ($options['instagram-post-list'] as ['instagram-post' => $instagram_post, 'instagram-product' => $instagram_product]) {
+                $data[] = [
+                    $instagram_post,
+                    $instagram_product
+                ];
             }
 
             $this->data[1]['options'] = serialize($data);
         }
     }
 
-    private function set_kits($options) {
+    private function set_kits(array $options): void {
         $data = [];
 
         $this->data[2]['id'] = 2;
@@ -66,7 +67,7 @@ class sk_options extends bootstrap {
         $this->data[2]['options'] = serialize($data);
     }
 
-    private function set_superior_slider_items($options, $attachments) {
+    private function set_superior_slider_items(array $options, $attachments): void {
         $data = [];
 
         $this->data[3]['id'] = 3;

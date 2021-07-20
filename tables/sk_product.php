@@ -76,7 +76,7 @@ class sk_product extends bootstrap {
                     if ($this->filterHelper->filter_expo_product($id)) {
 
 //                    $id = 164811;
-//                    $id = 155427;
+//                    $id = 160070;
 
                         $products_array = $this->set_products_array_by_id($id, $this->all_products);
                         $relashionships_array = $this->set_relashions_array_by_id($id, $this->relashionships);
@@ -91,10 +91,11 @@ class sk_product extends bootstrap {
                         $this->set_slug('slug', $id, $products_array);
                         $this->set_name('name', $id, $products_array);
                         $this->set_category_id('category_id', $id, $category_id);
+                        $this->set_text_content('text', $id, $products_array);
                         $this->set_default_variation_id('default_variation_id', $id, $postmeta_array);
                         $this->set_product_attributes('product_attributes', $id, $postmeta_array);
                         $this->set_subtitle('subtitle', $id, $postmeta_array);
-                        $this->set_video('video', $id, $postmeta_array, $this->attachments, $this->attachments_with_parent);
+                        $this->set_video('video', $id, $postmeta_array, $this->attachments, $this->attachments_with_parent, $this->postmeta);
                         $this->set_collection_id('collection_id', $id, $postmeta_array);
                         $this->set_interior_photos('interior_photos', $id, $postmeta_array, $this->attachments);
                         $this->set_up_sells_ids('up_sells_ids', $id, $postmeta_array, $variations, $this->all_products, $this->postmeta, $this->all_ids_products, $fabrics, $this->relashionships, $this->taxonomy, $this->terms, $this->woocommerce_attribute_taxonomies, $this->termmeta, $this->terms_by_slug, $materials);
@@ -126,6 +127,10 @@ class sk_product extends bootstrap {
         return $array['post_title'];
     }
 
+    private function get_text($array): string {
+        return $array['post_content'] ?? '';
+    }
+
     private function get_modified_unix($id, $array): string {
         return strtotime($array['post_modified']) . $id;
     }
@@ -142,7 +147,7 @@ class sk_product extends bootstrap {
         return $postmeta['_product_classification'] ?? "";
     }
 
-    public function get_video($postmeta, $attachments, $attachments_with_parent): string {
+    public function get_video($postmeta, $attachments, $attachments_with_parent, $allpostmeta): string {
 
         $video_id = $postmeta['_product_video'] ?? "";
 
@@ -152,15 +157,24 @@ class sk_product extends bootstrap {
 
         $data['url'] = isset($attachments[$video_id]) ? $attachments[$video_id]['url'] : "";
 
-        foreach ($attachments_with_parent as $key => $value) {
-            if (isset($attachments_with_parent[$key]['post_parent'])) {
-                if ($attachments_with_parent[$key]['post_parent'] == $video_id) {
+        $video_cover = $allpostmeta[$video_id]['video_cover'] ?? "";
 
-                    $data['cover']['original'] = $value['original'];
-                    $data['cover']['w500'] = $value['w500'];
-                }
+        if (!empty($video_cover)) {
+            if (isset($attachments[$video_cover])) {
+                $data['cover']['original'] = $attachments[$video_cover]['original'];
+                $data['cover']['w500'] = $attachments[$video_cover]['w500'];
             }
         }
+
+//        foreach ($attachments_with_parent as $key => $value) {
+//            if (isset($attachments_with_parent[$key]['post_parent'])) {
+//                if ($attachments_with_parent[$key]['post_parent'] == $video_id) {
+//
+//                    $data['cover']['original'] = $value['original'];
+//                    $data['cover']['w500'] = $value['w500'];
+//                }
+//            }
+//        }
 
         return serialize($data);
     }
@@ -235,10 +249,14 @@ class sk_product extends bootstrap {
 
         foreach ($product_attributes as $attribute) {
 
-            if ($attribute['is_variation'] == 0) {
-                $data['static'][$attribute['name']] = $attribute['name'];
-            } else {
+            if ($attribute['is_variation'] == '1') {
                 $data['variable'][$attribute['name']] = $attribute['name'];
+            }
+            if ($attribute['is_visible'] == '1') {
+                $data['static'][$attribute['name']] = $attribute['name'];
+            }
+            if ($attribute['is_visible'] == '0' && $attribute['is_variation'] == '0') {
+                $data['hidden'][$attribute['name']] = $attribute['name'];
             }
         }
 
@@ -291,6 +309,10 @@ class sk_product extends bootstrap {
         $this->products[$id][$key] = $category_id;
     }
 
+    private function set_text_content($key, $id, $array): void {
+        $this->products[$id][$key] = $this->get_text($array);
+    }
+
     private function set_default_variation_id($key, $id, $postmeta): void {
         $this->products[$id][$key] = $this->get_default_variation_id($postmeta);
     }
@@ -303,8 +325,8 @@ class sk_product extends bootstrap {
         $this->products[$id][$key] = $this->get_subtitle($postmeta);
     }
 
-    private function set_video($key, $id, $postmeta, $attachments, $attachments_with_parent): void {
-        $this->products[$id]['video'] = $this->get_video($postmeta, $attachments, $attachments_with_parent);
+    private function set_video($key, $id, $postmeta, $attachments, $attachments_with_parent, $allpostmeta): void {
+        $this->products[$id]['video'] = $this->get_video($postmeta, $attachments, $attachments_with_parent, $allpostmeta);
     }
 
     private function set_collection_id($key, $id, $postmeta): void {
@@ -337,10 +359,12 @@ class sk_product extends bootstrap {
         if (isset($postmeta['_product_attributes'])) {
             $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-            $this->products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
+            $this->products[$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $termmeta);
 
             $temp_variable_attributes = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
             $this->products[$id]['variable_attributes'] = $this->handle_filter_attributes($temp_variable_attributes, $attributes_for_equals);
+
+            $this->products[$id]['hidden_attributes'] = $this->get_hidden_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
         }
 
     }

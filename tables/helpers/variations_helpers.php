@@ -58,7 +58,12 @@ trait variations_helpers {
     }
 
     private function get_gallery($postmeta, $attachments) {
+
         $attachments_ids = isset($postmeta['_product_additional_photos']) ? $postmeta['_product_additional_photos'] : "";
+        if (empty($attachments_ids)) {
+            $attachments_ids = isset($postmeta['_product_interior']) ? $postmeta['_product_interior'] : "";
+        }
+
         $data = [];
 
         if (empty($attachments_ids)) {

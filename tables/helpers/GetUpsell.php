@@ -249,7 +249,7 @@ class GetUpsell {
 
                 $attributes = $this->get_attributes(unserialize($postmeta['_product_attributes']));
 
-                $this->data['items'][$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies);
+                $this->data['items'][$id]['static_attributes'] = $this->get_static_attributes($relashionships_array, $attributes, $taxonomy, $terms, $woocommerce_attribute_taxonomies,$termmeta);
                 $this->data['items'][$id]['variable_attributes'] = $this->get_variable_attributes($relashionships_array, $attributes, $fabrics, $taxonomy, $terms, $woocommerce_attribute_taxonomies, $postmeta_all, $termmeta, $materials);
             }
         }

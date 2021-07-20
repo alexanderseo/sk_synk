@@ -23,7 +23,7 @@ trait static_attributes {
         return serialize(array_values($data));
     }
 
-    public function get_static_attributes($terms_ids, $attributes, $taxonomies, $terms, $woocommerce_attribute_taxonomies) {
+    public function get_static_attributes($terms_ids, $attributes, $taxonomies, $terms, $woocommerce_attribute_taxonomies, $termmeta) {
         $data = [];
         $taxonomy_options = [];
 
@@ -31,6 +31,47 @@ trait static_attributes {
             $taxonomy = $this->get_taxonomy_s($term_id, $taxonomies);
 
             if (isset($attributes['static'][$taxonomy])) {
+
+                $term = $this->get_term_s($term_id, $taxonomies, $terms);
+
+
+
+                $taxonomy_options[$taxonomy][$term['slug']]['term_id'] = $term['term_id'];
+                $taxonomy_options[$taxonomy][$term['slug']]['term_slug'] = $term['slug'];
+                $taxonomy_options[$taxonomy][$term['slug']]['term_name'] = $term['name'];
+                $taxonomy_options[$taxonomy][$term['slug']]['order_attribut'] = $this->set_order_attribut($termmeta, $term['term_id']);
+
+                $taxonomy_id = $taxonomies[$term_id['term_taxonomy_id']]['term_taxonomy_id'];
+
+                $data[$taxonomy]['taxonomy_id'] = $taxonomy_id;
+                $data[$taxonomy]['taxonomy_slug'] = $taxonomy;
+                $data[$taxonomy]['taxonomy_name'] = $woocommerce_attribute_taxonomies[str_replace('pa_', '', $taxonomy)];
+                $data[$taxonomy]['taxonomy_options'] = array_values($taxonomy_options[$taxonomy]);
+            }
+        }
+
+        return serialize(array_values($data));
+    }
+
+    private function set_order_attribut(array $termmeta, int $term_id): array {
+        $order = [];
+
+        if (isset($termmeta[$term_id])) {
+            $order = $termmeta[$term_id];
+        }
+
+        return $order;
+    }
+
+    public function get_hidden_attributes($terms_ids, $attributes, $taxonomies, $terms, $woocommerce_attribute_taxonomies) {
+        $data = [];
+        $taxonomy_options = [];
+
+        foreach ($terms_ids as $term_id) {
+            $taxonomy = $this->get_taxonomy_s($term_id, $taxonomies);
+
+            if (isset($attributes['hidden'][$taxonomy])) {
+
                 $term = $this->get_term_s($term_id, $taxonomies, $terms);
 
                 $taxonomy_options[$taxonomy][$term['slug']]['term_id'] = $term['term_id'];

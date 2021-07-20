@@ -40,7 +40,6 @@ class sk_interiors extends bootstrap {
     public function get() {
 
         foreach ($this->ids_interiors as $id) {
-//            $id = 192387;
             $post_interiors = $this->interiors[$id];
             $this_postmeta = $this->postmeta[$id];
 
@@ -116,8 +115,10 @@ class sk_interiors extends bootstrap {
         $items = [];
 
         if (isset($postmeta['interior-ideas-items'])) {
-            foreach(unserialize($postmeta['interior-ideas-items']) as $item) {
-                $items[] = $item;
+            if (!empty($postmeta['interior-ideas-items'])) {
+                foreach(unserialize($postmeta['interior-ideas-items']) as $item) {
+                    $items[] = $item;
+                }
             }
         }
 
@@ -159,6 +160,7 @@ class sk_interiors extends bootstrap {
 
         if (isset($postmeta['_thumbnail_id'])) {
             $data['original'] = $attachments[$postmeta['_thumbnail_id']]['original'] ?? "";
+            $data['w500'] = $attachments[$postmeta['_thumbnail_id']]['w500'] ?? "";
         }
 
         return serialize($data);

@@ -50,6 +50,7 @@ class sk_categories extends bootstrap {
             $this->set_attributes_filter_list('attributes_filter_list', (int)$value, $term_meta);
             $this->set_enable_comparison('enable_comparison', (int)$value, $term_meta);
             $this->set_icon('icon', (int)$value, $term_meta, $this->attachments);
+            $this->set_detail_description('detail_description', (int)$value, $term_meta);
 
         }
 
@@ -216,6 +217,7 @@ class sk_categories extends bootstrap {
                 case 'attribute-type' : $data[$exploded_value[1]]['type'] = $array[$value]; break;
             }
         }
+        ksort($data);
 
         return $data;
     }
@@ -235,7 +237,6 @@ class sk_categories extends bootstrap {
     private function get_attributes_filter_list(array $term_meta): string {
 
         $attributes_filter_list = $this->get_attributes_filter_list_reformatted($this->getting_attributes_filter_list($term_meta));
-
         if (!empty($attributes_filter_list)) {
             return serialize($attributes_filter_list);
         } else {
@@ -258,6 +259,20 @@ class sk_categories extends bootstrap {
         }
 
         return $icon;
+    }
+
+    private function get_detail_description(array $term_meta) {
+        $data = [];
+
+        $search_meta_keys = ['details_0_details_row', 'details_1_details_row', 'details_2_details_row'];
+
+        foreach ($search_meta_keys as $meta_key) {
+            if (isset($term_meta[$meta_key])) {
+                $data[$meta_key] = $term_meta[$meta_key];
+            }
+        }
+
+        return serialize($data);
     }
 
     private function set_id(string $key, int $value): void {
@@ -314,5 +329,9 @@ class sk_categories extends bootstrap {
 
     private function set_icon($key, $value,  $term_meta, $attachments): void {
         $this->categories[$value][$key] = $this->get_icon($term_meta, $attachments);
+    }
+
+    private function set_detail_description($key, $value,  $term_meta): void {
+        $this->categories[$value][$key] = $this->get_detail_description($term_meta);
     }
 }
